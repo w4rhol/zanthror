@@ -1,11 +1,14 @@
 Package: zanthror
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Stata Functions zbmicat and zanthro for R
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Warren Holroyd
+Maintainer: N/A
+Description: Vectorized R replication of Stata's zbmicat and zanthro functions.
+    Faithfully replicates the Stata .ado originally written by Szanna I Vidmar, Tim J Cole and Huqui Pan.
+License: TBC
 Encoding: UTF-8
 LazyData: true
+Depends: 
+    R (>= 3.5)
+RoxygenNote: 7.3.2
