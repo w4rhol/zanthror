@@ -4,6 +4,8 @@
 [![CRAN status](https://www.r-pkg.org/badges/version/zanthror)](https://CRAN.R-project.org/package=zanthror)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<img src="man/figures/hex-zanthror.png" align="right" height="150"/>
+
 ## Overview
 
 **zanthror** provides comprehensive tools for anthropometric analysis in R, with a focus on child growth assessment and BMI classification using international standards. The package offers both exact replications of established Stata functions and enhanced LMS-based approaches for greater accuracy.
