@@ -228,16 +228,14 @@ This package is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## Acknowledgments
 
-- **Tim Cole** for the original IOTF methodology and the sitar package
-- **Stata Corporation** for the original zbmicat implementation
-- **International Obesity Task Force** for establishing the growth reference standards
+- **Suzanna I. Vidmar, Tim J. Cole & Huiqi Pan** for the original zbmicat implementation
+- **Tim J. Cole** for the sitar package
 
 ## Citation
 
-If you use zanthror in your research, please cite:
+If you use zanthror in your research, please run:
 
 ```
-# Citation format will be updated when package is published
 citation("zanthror")
 ```
 
