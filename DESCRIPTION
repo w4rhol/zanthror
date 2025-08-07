@@ -1,14 +1,25 @@
 Package: zanthror
 Type: Package
-Title: Stata Functions zbmicat and zanthro for R
+Title: R replication of Stata zanthro extension
 Version: 0.1.0
 Author: Warren Holroyd
-Maintainer: N/A
-Description: Vectorized R replication of Stata's zbmicat and zanthro functions.
-    Faithfully replicates the Stata .ado originally written by Szanna I Vidmar, Tim J Cole and Huqui Pan.
-License: TBC
+Maintainer: Warren Holroyd <warrenholroyd@gmail.com>
+Description: Classifies BMI values using International Obesity Task Force (IOTF) 
+    age and sex-specific cutoffs. Replicates the functionality of Stata's 
+    zanthro extension with vectorized performance and labelling options.
+URL: https://github.com/w4rhol/zanthror
+BugReports: https://github.com/w4rhol/zanthror/issues
+License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
+Suggests: 
+    testthat (>= 3.0.0)
+Imports:
+    stats,
+    labelled,
+    haven,
+    sitar
 Depends: 
-    R (>= 3.5)
+    R (>= 3.5.0)
+LazyData: true
 RoxygenNote: 7.3.2
+Roxygen: list(markdown = TRUE)

@@ -1,0 +1,20 @@
+#' Test dataset for zanthror
+#'
+#' A dataset containing anthropometric measurements for 500 children and
+#' adolescents aged 2-18 years, designed for testing the zanthror functions.
+#'
+#' @format A data frame with 200 rows and 10 variables:
+#' \describe{
+#'   \item{participant_id}{Character. Unique participant identifier}
+#'   \item{age_years}{Numeric. Age in years with decimal precision}
+#'   \item{gender}{Integer. Gender code (1 = male, 2 = female)}
+#'   \item{gender_label}{Character. Gender labels ("Male", "Female")}
+#'   \item{height_cm}{Numeric. Height in centimeters}
+#'   \item{weight_kg}{Numeric. Weight in kilograms}
+#'   \item{bmi}{Numeric. Calculated BMI (kg/m²)}
+#'   \item{country}{Character. Country code}
+#'   \item{study_site}{Character. Study site identifier}
+#'   \item{measurement_date}{Date. Date of measurement}
+#' }
+#' @source Simulated data based on WHO/CDC growth references
+"zanthror_testdata"

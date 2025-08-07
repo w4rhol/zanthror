@@ -1,5 +1,135 @@
-# zbmicat_stata: Vectorized R replication of Stata's zbmicat function
-# Uses the actual IOTF reference data from zbmicat.dta with optimized performance
+#' Classify BMI using IOTF cutoffs (Stata zbmicat replication)
+#'
+#' This function replicates the functionality of Stata's zbmicat command,
+#' classifying BMI values into weight categories using International Obesity
+#' Task Force (IOTF) age and sex-specific cutoffs with interpolation.
+#'
+#' @param bmi Numeric vector. Body Mass Index values (kg/m²)
+#' @param age Numeric vector. Age values (same length as bmi)
+#' @param gender Numeric or character vector. Gender codes (same length as bmi)
+#' @param male_code Scalar. Code used for males in the gender variable (default: 1)
+#' @param female_code Scalar. Code used for females in the gender variable (default: 2)
+#' @param age_unit Character. Units for age values. One of "year", "month", "week", "day" (default: "year")
+#' @param wtabbr Logical. If TRUE, returns "Normal wt"; if FALSE, returns "Normal weight" (default: FALSE)
+#' @param return Character. Output format: "string", "factor", "labelled", "haven", or "numeric" (default: "string")
+#'
+#' @return Vector of BMI classifications. Format depends on \code{return} parameter:
+#' \itemize{
+#'   \item "string": Character vector with category names
+#'   \item "factor": Ordered factor with proper level ordering
+#'   \item "labelled": Labelled numeric vector with values -3 to 2 (requires labelled package)
+#'   \item "haven": Haven-labelled numeric vector with values -3 to 2 (requires haven package)
+#'   \item "numeric": Plain numeric vector with values -3 to 2 (no labels)
+#' }
+#'
+#' @details
+#' The function uses IOTF reference data (Cole & Lobstein, 2012) to classify BMI values into:
+#' \itemize{
+#'   \item Grade 3 thinness (BMI < 16 equivalent at age 18)
+#'   \item Grade 2 thinness (BMI 16-17 equivalent at age 18)
+#'   \item Grade 1 thinness (BMI 17-18.5 equivalent at age 18)
+#'   \item Normal weight (BMI 18.5-25 equivalent at age 18)
+#'   \item Overweight (BMI 25-30 equivalent at age 18)
+#'   \item Obese (BMI ≥30 equivalent at age 18)
+#' }
+#'
+#' Age and sex-specific cutoffs are calculated using the same interpolation methods
+#' as Stata's zbmicat command:
+#' \itemize{
+#'   \item Linear interpolation for ages 2-2.5 and 17.5-18 years
+#'   \item Cubic interpolation for ages 2.5-17.5 years
+#'   \item No interpolation when age matches reference grid exactly
+#' }
+#'
+#' Missing values (NA) are returned for:
+#' \itemize{
+#'   \item Missing BMI, age, or gender values
+#'   \item BMI ≤ 0
+#'   \item Age < 2 or > 18 years
+#'   \item Invalid gender codes
+#' }
+#'
+#' @references
+#' Cole, T. J., & Lobstein, T. (2012). Extended international (IOTF) body mass index
+#' cut-offs for thinness, overweight and obesity. \emph{Pediatric Obesity}, 7(4), 284-294.
+#'
+#' Cole, T. J., Bellizzi, M. C., Flegal, K. M., & Dietz, W. H. (2000). Establishing a
+#' standard definition for child overweight and obesity worldwide: international survey.
+#' \emph{BMJ}, 320(7244), 1240-1243.
+#'
+#' @examples
+#' # Load test data
+#' data(zanthror_testdata)
+#'
+#' # Basic usage - string output
+#' zanthror_testdata$bmi_category <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = zanthror_testdata$age_years,
+#'   gender = zanthror_testdata$gender
+#' )
+#' table(zanthror_testdata$bmi_category, useNA = "ifany")
+#'
+#' # Factor output for statistical analysis
+#' bmi_factor <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = zanthror_testdata$age_years,
+#'   gender = zanthror_testdata$gender,
+#'   return = "factor"
+#' )
+#' levels(bmi_factor)
+#'
+#' # Labelled output
+#' bmi_labelled <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = zanthror_testdata$age_years,
+#'   gender = zanthror_testdata$gender,
+#'   return = "labelled"
+#' )
+#' labelled::val_labels(bmi_labelled)
+#'
+#' # Numeric output (values -3 to 2, no labels)
+#' bmi_numeric <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = zanthror_testdata$age_years,
+#'   gender = zanthror_testdata$gender,
+#'   return = "numeric"
+#' )
+#' table(bmi_numeric)
+#'
+#' # Haven-labelled output
+#' bmi_haven <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = zanthror_testdata$age_years,
+#'   gender = zanthror_testdata$gender,
+#'   return = "haven"
+#' )
+#' attr(bmi_haven, "labels")
+#'
+#' # With character gender codes
+#' zanthror_testdata$gender_char <- ifelse(zanthror_testdata$gender == 1, "M", "F")
+#' result <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = zanthror_testdata$age_years,
+#'   gender = zanthror_testdata$gender_char,
+#'   male_code = "M",
+#'   female_code = "F"
+#' )
+#' table(result)
+#'
+#' # Age in months
+#' age_months <- zanthror_testdata$age_years * 12
+#' result_months <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = age_months,
+#'   gender = zanthror_testdata$gender,
+#'   age_unit = "month"
+#' )
+#' table(result_months)
+#'
+#' @export
+#' @importFrom stats approx complete.cases
+#' @importFrom labelled labelled
+#' @importFrom haven labelled as_factor
 
 zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_unit = "year", wtabbr = FALSE, return = "string") {
 
@@ -12,8 +142,8 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
     stop("age_unit must be one of: 'day', 'week', 'month', 'year'")
   }
 
-  if (!return %in% c("string", "factor", "labelled")) {
-    stop("return must be one of: 'string', 'factor', or 'labelled'")
+  if (!return %in% c("string", "factor", "labelled", "haven", "numeric")) {
+    stop("return must be one of: 'string', 'factor', 'labelled', 'haven', or 'numeric'")
   }
 
   # Load the IOTF reference data from package internal data
@@ -49,7 +179,7 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
 
   # Process only valid cases
   if (!any(valid_mask)) {
-    return(result)
+    return(convert_output(result, return, wtabbr))
   }
 
   # Subset to valid cases for vectorized operations
@@ -71,7 +201,7 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
   valid_matches <- !is.na(match_indices)
 
   if (!any(valid_matches)) {
-    return(result)
+    return(convert_output(result, return, wtabbr))
   }
 
   # Subset to cases with IOTF matches
@@ -167,144 +297,53 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
     result[final_indices] <- classifications
   }
 
-  # Convert result based on return type
+  # Convert output based on return parameter
+  return(convert_output(result, return, wtabbr))
+}
+
+# Helper function to convert output format
+convert_output <- function(result, return, wtabbr) {
+
   if (return == "string") {
     return(result)
-  } else if (return == "factor") {
-    # Create ordered factor with proper labels
-    normal_weight_label <- if (wtabbr) "Normal wt" else "Normal weight"
+  }
+
+  # Define normal weight label based on wtabbr
+  normal_weight_label <- if (wtabbr) "Normal wt" else "Normal weight"
+
+  if (return == "factor") {
     factor_levels <- c("Grade 3 thinness", "Grade 2 thinness", "Grade 1 thinness",
                        normal_weight_label, "Overweight", "Obese")
-
     result_factor <- factor(result, levels = factor_levels, ordered = TRUE)
     return(result_factor)
-  } else if (return == "labelled") {
-    # Check if labelled package is available
-    if (!requireNamespace("labelled", quietly = TRUE)) {
-      stop("The 'labelled' package is required for return='labelled'. Install it with: install.packages('labelled')")
-    }
+  }
 
-    # Create numeric values (-3, -2, -1, 0, 1, 2)
-    normal_weight_label <- if (wtabbr) "Normal wt" else "Normal weight"
+  # For numeric, labelled, and haven - convert strings to numeric values
+  numeric_result <- rep(NA_integer_, length(result))
+  numeric_result[result == "Grade 3 thinness"] <- -3L
+  numeric_result[result == "Grade 2 thinness"] <- -2L
+  numeric_result[result == "Grade 1 thinness"] <- -1L
+  numeric_result[result == normal_weight_label] <- 0L
+  numeric_result[result == "Overweight"] <- 1L
+  numeric_result[result == "Obese"] <- 2L
 
-    numeric_result <- rep(NA_integer_, length(result))
-    numeric_result[result == "Grade 3 thinness"] <- -3L
-    numeric_result[result == "Grade 2 thinness"] <- -2L
-    numeric_result[result == "Grade 1 thinness"] <- -1L
-    numeric_result[result == normal_weight_label] <- 0L
-    numeric_result[result == "Overweight"] <- 1L
-    numeric_result[result == "Obese"] <- 2L
+  if (return == "numeric") {
+    return(numeric_result)
+  }
 
-    # Create labelled variable
-    labels <- c("Grade 3 thinness" = -3, "Grade 2 thinness" = -2, "Grade 1 thinness" = -1,
-                "Overweight" = 1, "Obese" = 2)
-    # Add the normal weight label with value 0
-    labels <- c(labels[1:3], setNames(0, normal_weight_label), labels[4:5])
+  # Create labels for labelled and haven formats
+  labels <- c("Grade 3 thinness" = -3, "Grade 2 thinness" = -2, "Grade 1 thinness" = -1,
+              "Overweight" = 1, "Obese" = 2)
+  # Add the normal weight label with value 0
+  labels <- c(labels[1:3], setNames(0, normal_weight_label), labels[4:5])
 
-    result_labelled <- labelled::labelled(numeric_result, labels = labels)
-    return(result_labelled)
+  if (return == "labelled") {
+    return(labelled::labelled(numeric_result, labels = labels))
+  }
+
+  if (return == "haven") {
+    return(haven::labelled(numeric_result, labels = labels))
   }
 
   return(result)
 }
-
-# Optimized helper function to load IOTF data
-load_iotf_data <- function(file_path = "iotf.csv") {
-  if (!file.exists(file_path)) {
-    stop(paste("IOTF reference file", file_path, "not found."))
-  }
-
-  # Read CSV efficiently
-  iotf_data <- read.csv(file_path, stringsAsFactors = FALSE)
-
-  # Standardize column names (handle different CSV export formats)
-  expected_patterns <- c("IOTFsex", "IOTFage",
-                         "IOTF16_pre", "IOTF16", "IOTF16_nx", "IOTF16_nx2",
-                         "IOTF17_pre", "IOTF17", "IOTF17_nx", "IOTF17_nx2",
-                         "IOTF18_5_pre", "IOTF18_5", "IOTF18_5_nx", "IOTF18_5_nx2",
-                         "IOTF25_pre", "IOTF25", "IOTF25_nx", "IOTF25_nx2",
-                         "IOTF30_pre", "IOTF30", "IOTF30_nx", "IOTF30_nx2")
-
-  # Rename columns to standard format if needed
-  col_names <- names(iotf_data)
-  for (pattern in expected_patterns) {
-    # Find columns that contain the pattern
-    matching_cols <- grep(pattern, col_names, value = TRUE)
-    if (length(matching_cols) == 1) {
-      standard_name <- paste0("X__", gsub("^.*__", "", matching_cols))
-      names(iotf_data)[names(iotf_data) == matching_cols] <- standard_name
-    }
-  }
-
-  # Convert sex and age to appropriate types
-  if ("X__IOTFsex" %in% names(iotf_data)) {
-    iotf_data$X__IOTFsex <- as.integer(iotf_data$X__IOTFsex)
-  }
-  if ("X__IOTFage" %in% names(iotf_data)) {
-    iotf_data$X__IOTFage <- as.numeric(iotf_data$X__IOTFage)
-  }
-
-  return(iotf_data)
-}
-
-# Performance testing function
-benchmark_zbmicat <- function(n = 10000) {
-  # Generate test data
-  set.seed(123)
-  test_bmi <- rnorm(n, mean = 18, sd = 3)
-  test_age <- runif(n, min = 2, max = 18)
-  test_gender <- sample(c(1, 2), n, replace = TRUE)
-
-  cat("Testing with", n, "observations...\n")
-
-  # Time the function
-  start_time <- Sys.time()
-  results <- zbmicat_stata(test_bmi, test_age, test_gender)
-  end_time <- Sys.time()
-
-  elapsed <- as.numeric(end_time - start_time, units = "secs")
-  cat("Time elapsed:", round(elapsed, 3), "seconds\n")
-  cat("Rate:", round(n / elapsed), "observations per second\n")
-
-  # Show result distribution
-  cat("\nResult distribution:\n")
-  print(table(results, useNA = "ifany"))
-
-  return(results)
-}
-
-# Example usage:
-#
-# # String output (default)
-# bmi$zbmicat_string <- zbmicat_stata(bmi = bmi$BMI,
-#                                    age = bmi$AgeYrs,
-#                                    gender = bmi$Sex,
-#                                    return = "string")
-#
-# # Ordered factor output
-# bmi$zbmicat_factor <- zbmicat_stata(bmi = bmi$BMI,
-#                                    age = bmi$AgeYrs,
-#                                    gender = bmi$Sex,
-#                                    return = "factor")
-# levels(bmi$zbmicat_factor)  # Shows the ordered levels
-#
-# # Labelled output (requires 'labelled' package)
-# # install.packages("labelled")
-# bmi$zbmicat_labelled <- zbmicat_stata(bmi = bmi$BMI,
-#                                      age = bmi$AgeYrs,
-#                                      gender = bmi$Sex,
-#                                      return = "labelled")
-# labelled::val_labels(bmi$zbmicat_labelled)  # Shows value-label mapping
-#
-# # Combined options
-# bmi$zbmicat_custom <- zbmicat_stata(bmi = bmi$BMI,
-#                                    age = bmi$AgeYrs,
-#                                    gender = bmi$Sex,
-#                                    wtabbr = TRUE,      # Abbreviated labels
-#                                    return = "factor")  # As ordered factor
-#
-# # Test performance:
-# benchmark_zbmicat(10000)  # Test with 10k observations
-#
-# # Clear cache if needed (e.g., if you update iotf.csv):
-# rm(.iotf_data_cache, envir = .GlobalEnv)
