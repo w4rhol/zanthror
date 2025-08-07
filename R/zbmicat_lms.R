@@ -125,7 +125,7 @@
 #'
 #' @export
 #' @importFrom sitar LMS2z
-#' @importFrom stats complete.cases
+#' @importFrom stats complete.cases setNames
 #' @importFrom labelled labelled
 #' @importFrom haven labelled as_factor
 
@@ -330,7 +330,7 @@ convert_output_lms <- function(result, return, wtabbr) {
   labels <- c("Grade 3 thinness" = -3, "Grade 2 thinness" = -2, "Grade 1 thinness" = -1,
               "Overweight" = 1, "Obese" = 2)
   # Add the normal weight label with value 0
-  labels <- c(labels[1:3], setNames(0, normal_weight_label), labels[4:5])
+  labels <- c(labels[1:3], stats::setNames(0, normal_weight_label), labels[4:5])
 
   if (return == "labelled") {
     if (!requireNamespace("labelled", quietly = TRUE)) {
