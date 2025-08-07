@@ -1,4 +1,4 @@
-# zanthror: R replication of Stata's zanthro Anthropometric Analysis Tools for R
+# zanthror: Stata's zanthro anthropometric analysis tools ported to R
 
 [![R-CMD-check](https://github.com/w4rhol/zanthror/workflows/R-CMD-check/badge.svg)](https://github.com/w4rhol/zanthror/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/zanthror)](https://CRAN.R-project.org/package=zanthror)
@@ -224,7 +224,7 @@ This package is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## Acknowledgments
 
-- **Suzanna I. Vidmar, Tim J. Cole & Huiqi Pan** for the original zbmicat implementation
+- **Suzanna I. Vidmar, Tim J. Cole & Huiqi Pan** for the [original zbmicat implementation](https://www.stata-journal.com/article.html?article=dm0004_1)
 - **Tim J. Cole** for the [sitar](https://github.com/statist7/sitar) package
 
 ## Citation
