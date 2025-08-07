@@ -1,4 +1,4 @@
-# zanthror: Anthropometric Analysis Tools for R
+# zanthror: R replication of Stata's zanthro Anthropometric Analysis Tools for R
 
 [![R-CMD-check](https://github.com/w4rhol/zanthror/workflows/R-CMD-check/badge.svg)](https://github.com/w4rhol/zanthror/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/zanthror)](https://CRAN.R-project.org/package=zanthror)
@@ -13,7 +13,7 @@
 - **IOTF BMI Classification**: Classify children's BMI using International Obesity Task Force cutoffs
 - **Multiple Implementation Approaches**: 
   - `zbmicat_stata()`: Exact replication of Stata's zbmicat command with interpolation
-  - `zbmicat_lms()`: Enhanced LMS-based method using the sitar package for greater accuracy
+  - `zbmicat_lms()`: Enhanced LMS-based method using the [sitar](https://github.com/statist7/sitar) package for greater accuracy
 - **Flexible Output Formats**: String, factor, labelled, haven, or numeric outputs
 - **Comprehensive Age Support**: Ages 2-18 years with multiple time units (years, months, weeks, days)
 - **Vectorized Performance**: Optimized for large datasets
@@ -211,11 +211,7 @@ The package includes comprehensive test data (`zanthror_testdata`) and has been 
 **LMS Method:**
 - Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. *Statistics in Medicine*, 11(10), 1305-1319.
 
-## Contributing
-
-I welcome contributions! See the issues page.
-
-### Issues and Bug Reports
+## Issues and Bug Reports
 
 Please report issues on our [GitHub Issues page](https://github.com/w4rhol/zanthror/issues) with:
 - Reproducible example
@@ -229,11 +225,11 @@ This package is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 ## Acknowledgments
 
 - **Suzanna I. Vidmar, Tim J. Cole & Huiqi Pan** for the original zbmicat implementation
-- **Tim J. Cole** for the sitar package
+- **Tim J. Cole** for the [sitar](https://github.com/statist7/sitar) package
 
 ## Citation
 
-If you use zanthror in your research, please run:
+If you use zanthror in your research, please derive a citation from:
 
 ```
 citation("zanthror")
