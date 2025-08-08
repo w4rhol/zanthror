@@ -127,7 +127,7 @@
 #' table(result_months)
 #'
 #' @export
-#' @importFrom stats approx complete.cases setNames
+#' @importFrom stats approx complete.cases
 #' @importFrom labelled labelled
 #' @importFrom haven labelled as_factor
 
@@ -146,11 +146,21 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
     stop("return must be one of: 'string', 'factor', 'labelled', 'haven', or 'numeric'")
   }
 
-  # Load the IOTF reference data from package internal data
-  if (!exists("iotf_data")) {
-    stop("IOTF reference data not found. This function requires the package internal data.")
+  # Load the IOTF reference data from package internal data or file
+  if (exists("iotf_data", envir = .GlobalEnv)) {
+    iotf_data <- get("iotf_data", envir = .GlobalEnv)
+  } else if (file.exists("iotf.csv")) {
+    # Fallback: load from CSV if available
+    if (!exists(".iotf_data_cache", envir = .GlobalEnv)) {
+      .GlobalEnv$.iotf_data_cache <- load_iotf_data("iotf.csv")
+    }
+    iotf_data <- .GlobalEnv$.iotf_data_cache
+  } else {
+    stop("IOTF reference data not found. Please ensure either:\n",
+         "1. iotf_data exists in the global environment, or\n",
+         "2. iotf.csv file is in the working directory, or\n",
+         "3. Package internal data is properly loaded")
   }
-  # Note: In a package, iotf_data would be automatically available from R/sysdata.rda
 
   # Convert age to years if needed
   age_years <- switch(age_unit,
@@ -170,7 +180,7 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
     gender_num[gender == female_code] <- 2L
   }
 
-  # Create validity mask
+  # Create validity mask - IOTF only valid for ages 2-18
   valid_mask <- !is.na(bmi) & !is.na(age_years) & !is.na(gender_num) &
     bmi > 0 & age_years >= 2 & age_years <= 18
 
@@ -230,11 +240,22 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
     col_nx <- paste0("X__IOTF", cutoff_name, "_nx")
     col_nx2 <- paste0("X__IOTF", cutoff_name, "_nx2")
 
+    # Safety check: ensure we have data to process
+    if (length(matched_bmi) == 0) {
+      next  # Skip this cutoff if no data
+    }
+
     # Extract values for vectorized computation
     pre_vals <- matched_iotf_rows[[col_pre]]
     curr_vals <- matched_iotf_rows[[col_current]]
     nx_vals <- matched_iotf_rows[[col_nx]]
     nx2_vals <- matched_iotf_rows[[col_nx2]]
+
+    # Safety check: ensure all vectors have data
+    if (length(pre_vals) == 0 || length(curr_vals) == 0 ||
+        length(nx_vals) == 0 || length(nx2_vals) == 0) {
+      next  # Skip this cutoff if missing reference data
+    }
 
     # Vectorized interpolation logic
     # No interpolation when age equals reference age
@@ -247,29 +268,41 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
     # Cubic interpolation for middle segment
     cubic_seg <- matched_age > 2.5 & matched_age < 17.5
 
-    # Calculate interpolated values
+    # Calculate interpolated values with safety checks
     cutoff_vals <- rep(NA_real_, length(matched_bmi))
 
+    # Safety check: ensure all logical vectors have the right length
+    if (length(exact_age) != length(matched_bmi) ||
+        length(linear_seg) != length(matched_bmi) ||
+        length(cubic_seg) != length(matched_bmi)) {
+      stop("Length mismatch in interpolation vectors")
+    }
+
     # Exact age - no interpolation
-    cutoff_vals[exact_age] <- curr_vals[exact_age]
+    exact_indices <- which(exact_age)
+    if (length(exact_indices) > 0 && length(curr_vals[exact_indices]) > 0) {
+      cutoff_vals[exact_indices] <- curr_vals[exact_indices]
+    }
 
     # Linear interpolation
-    if (any(linear_seg)) {
-      cutoff_vals[linear_seg] <- curr_vals[linear_seg] +
-        age_frac[linear_seg] * (nx_vals[linear_seg] - curr_vals[linear_seg])
+    linear_indices <- which(linear_seg)
+    if (length(linear_indices) > 0 && length(curr_vals[linear_indices]) > 0) {
+      cutoff_vals[linear_indices] <- curr_vals[linear_indices] +
+        age_frac[linear_indices] * (nx_vals[linear_indices] - curr_vals[linear_indices])
     }
 
     # Cubic interpolation (vectorized)
-    if (any(cubic_seg)) {
+    cubic_indices <- which(cubic_seg)
+    if (length(cubic_indices) > 0 && length(curr_vals[cubic_indices]) > 0) {
       a0 <- -pre_vals/6 + curr_vals/2 - nx_vals/2 + nx2_vals/6
       a1 <- pre_vals/2 - curr_vals + nx_vals/2
       a2 <- -pre_vals/3 - curr_vals/2 + nx_vals - nx2_vals/6
       a3 <- curr_vals
 
-      cutoff_vals[cubic_seg] <- a0[cubic_seg] * age_frac[cubic_seg] * age_frac2[cubic_seg] +
-        a1[cubic_seg] * age_frac2[cubic_seg] +
-        a2[cubic_seg] * age_frac[cubic_seg] +
-        a3[cubic_seg]
+      cutoff_vals[cubic_indices] <- a0[cubic_indices] * age_frac[cubic_indices] * age_frac2[cubic_indices] +
+        a1[cubic_indices] * age_frac2[cubic_indices] +
+        a2[cubic_indices] * age_frac[cubic_indices] +
+        a3[cubic_indices]
     }
 
     cutoffs_matrix[, i] <- cutoff_vals
@@ -335,7 +368,7 @@ convert_output <- function(result, return, wtabbr) {
   labels <- c("Grade 3 thinness" = -3, "Grade 2 thinness" = -2, "Grade 1 thinness" = -1,
               "Overweight" = 1, "Obese" = 2)
   # Add the normal weight label with value 0
-  labels <- c(labels[1:3], stats::setNames(0, normal_weight_label), labels[4:5])
+  labels <- c(labels[1:3], setNames(0, normal_weight_label), labels[4:5])
 
   if (return == "labelled") {
     return(labelled::labelled(numeric_result, labels = labels))
