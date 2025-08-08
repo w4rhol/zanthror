@@ -1,20 +1,76 @@
-#' Test dataset for zanthror
+#' Test dataset for zanthror package functions
 #'
-#' A dataset containing anthropometric measurements for 500 children and
-#' adolescents aged 2-18 years, designed for testing the zanthror functions.
+#' A comprehensive dataset containing anthropometric measurements for 500 children,
+#' adolescents, and young adults aged 0-21 years, designed for testing zanthror
+#' package functions including zbmicat_stata.
 #'
-#' @format A data frame with 200 rows and 10 variables:
+#' @format A data frame with 500 rows and 18 variables:
 #' \describe{
-#'   \item{participant_id}{Character. Unique participant identifier}
-#'   \item{age_years}{Numeric. Age in years with decimal precision}
+#'   \item{participant_id}{Character. Unique participant identifier (ID001-ID500)}
+#'   \item{age_years}{Numeric. Age in years with decimal precision (0-21 years)}
 #'   \item{gender}{Integer. Gender code (1 = male, 2 = female)}
 #'   \item{gender_label}{Character. Gender labels ("Male", "Female")}
 #'   \item{height_cm}{Numeric. Height in centimeters}
 #'   \item{weight_kg}{Numeric. Weight in kilograms}
 #'   \item{bmi}{Numeric. Calculated BMI (kg/m²)}
-#'   \item{country}{Character. Country code}
-#'   \item{study_site}{Character. Study site identifier}
-#'   \item{measurement_date}{Date. Date of measurement}
+#'   \item{head_circumference_cm}{Numeric. Head circumference in centimeters}
+#'   \item{sitting_height_cm}{Numeric. Sitting height in centimeters (UK participants only, others NA)}
+#'   \item{leg_length_cm}{Numeric. Leg length in centimeters (UK participants only, others NA)}
+#'   \item{waist_circumference_cm}{Numeric. Waist circumference in centimeters (UK participants only, others NA)}
+#'   \item{body_fat_percent}{Numeric. Body fat percentage (UK participants only, others NA)}
+#'   \item{arm_circumference_cm}{Numeric. Mid-upper arm circumference in centimeters}
+#'   \item{subscapular_skinfold_mm}{Numeric. Subscapular skinfold thickness in millimeters}
+#'   \item{triceps_skinfold_mm}{Numeric. Triceps skinfold thickness in millimeters}
+#'   \item{country}{Character. Country code (UK, USA, Canada, Australia, Netherlands, Brazil)}
+#'   \item{study_site}{Character. Study site identifier (Site_A, Site_B, Site_C, Site_D)}
+#'   \item{measurement_date}{Date. Date of measurement (2022-2023)}
 #' }
-#' @source Simulated data based on WHO/CDC growth references
+#'
+#' @details
+#' This dataset simulates a realistic multi-national anthropometric study with:
+#' \itemize{
+#'   \item Age range: 0-21 years (infants to young adults)
+#'   \item Gender distribution: ~52% male, 48% female
+#'   \item Countries: UK (25%), USA (25%), Canada (15%), Australia (15%), Netherlands (15%), Brazil (5%)
+#'   \item UK-specific measurements: Only UK participants have sitting height, leg length, waist circumference, and body fat data
+#'   \item Realistic missing data patterns: When BMI is missing, either height or weight is missing (not both)
+#'   \item Age-appropriate measurements: Infant values for 0-2 years, child/adolescent growth patterns, young adult plateau
+#' }
+#'
+#' The dataset includes comprehensive anthropometric measurements commonly collected
+#' in pediatric growth studies, with realistic inter-correlations and missing data
+#' patterns that mirror real-world data collection constraints.
+#'
+#' @source Simulated data based on WHO/CDC growth references and realistic
+#' anthropometric relationships
+#'
+#' @examples
+#' # Load the dataset
+#' data(zanthror_testdata)
+#'
+#' # Basic dataset exploration
+#' summary(zanthror_testdata)
+#' table(zanthror_testdata$country)
+#'
+#' # Age distribution
+#' hist(zanthror_testdata$age_years, main = "Age Distribution", xlab = "Age (years)")
+#'
+#' # BMI classification using zbmicat_stata
+#' zanthror_testdata$bmi_category <- zbmicat_stata(
+#'   bmi = zanthror_testdata$bmi,
+#'   age = zanthror_testdata$age_years,
+#'   gender = zanthror_testdata$gender
+#' )
+#' table(zanthror_testdata$bmi_category, useNA = "ifany")
+#'
+#' # UK-specific measurements availability
+#' uk_data <- subset(zanthror_testdata, country == "UK")
+#' cat("UK participants with body fat data:", sum(!is.na(uk_data$body_fat_percent)), "\n")
+#'
+#' # Growth patterns by gender
+#' plot(zanthror_testdata$age_years, zanthror_testdata$height_cm,
+#'      col = zanthror_testdata$gender, pch = 16,
+#'      xlab = "Age (years)", ylab = "Height (cm)",
+#'      main = "Height by Age and Gender")
+#' legend("bottomright", legend = c("Male", "Female"), col = 1:2, pch = 16)
 "zanthror_testdata"

@@ -218,10 +218,6 @@ Please report issues on our [GitHub Issues page](https://github.com/w4rhol/zanth
 - Expected vs actual behavior
 - System information (R version, OS, package versions)
 
-## License
-
-This package is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
 ## Acknowledgments
 
 - **Suzanna I. Vidmar, Tim J. Cole & Huiqi Pan** for the [original zbmicat implementation](https://www.stata-journal.com/article.html?article=dm0004_1)
