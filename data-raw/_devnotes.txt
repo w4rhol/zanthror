@@ -1,0 +1,71 @@
+===================================================================================
+  NOTES FOR FUTURE SELF
+===================================================================================
+
+----  Issues with Stata validation  -----------------------------------------------
+
+Currently, the organisational infrastrure arrangements have Stata hosted on a 
+Citrix machine, thus limiting it's ability to see the OneDrive location which this 
+package has been built from.
+
+As such, when sending test data over to Stata to provide baselines for function
+validation, this must be run from a network location (Q drive).  Run testdata
+folder scripts to recreate test data, run statabaseline folder scripts in Stata, 
+then run validate folder scripts from R. They are all hard-coded to reference that 
+Q drive location.
+
+REMEMBER: If you make changes to the Q drive `generate_stata_results.ado` file, 
+you will need to manually copy it across to your git-sync'd folder on OneDrive to
+ensure that it remains accessible and clonable from GitHub.
+
+Short term, you could move the package to the Q drive and use a virtual machine
+which will ensure both the Citrix and virtual machine have access to that shared Q 
+drive location (without the latency which a local installation of R suffers). This
+will create a singular working location, but will still be semi-manual.
+
+Long term, if infrastrure arrangements alter where Stata and R are hosted on the 
+same machine, consider switching the process completely to the full integration 
+supplied by the RStata package.  Stata will then be accessed remotely by R and you
+can streamline the validation process.
+
+----  Extraction of Stata reference files  ----------------------------------------
+
+These are currently all hard-coded to read the Q drive location.  Also note that 
+some reference files are not in the 'z' ado folder, but are under '_' for some odd
+reason.
+
+----  Minor variations in zscores  ------------------------------------------------
+
+Probabaly a floating point error, but may be worth looking into at some point:
+
+=== DETAILED COMPARISON RESULTS ===
+                                        combination both_valid_n mean_difference max_abs_difference         rmse correlation
+5            hca US head_circumference_cm age_years           62    2.726532e-03       4.254001e-02 7.312733e-03   0.9999933
+1                         la US height_cm age_years           64    1.951327e-03       3.421825e-02 5.933471e-03   0.9999978
+8                               ba UK bmi age_years          487    1.421005e-04       3.388889e-02 1.890841e-03   0.9999987
+9            hca UK head_circumference_cm age_years          297    6.918707e-04       2.987643e-02 3.262268e-03   0.9999991
+14                       ha WHO height_cm age_years          423    2.196574e-04       2.536308e-02 1.525929e-03   0.9999998
+21              ha UKWHOpreterm height_cm age_years          434    2.253288e-04       2.536308e-02 1.463092e-03   0.9999998
+25                 ha UKWHOterm height_cm age_years          434    2.253315e-04       2.536308e-02 1.463092e-03   0.9999998
+6                         ha UK height_cm age_years          449    2.880664e-04       2.352589e-02 1.722815e-03   0.9999997
+7                         wa UK weight_kg age_years          494    1.219727e-04       1.787524e-02 1.215063e-03   0.9999997
+15                       wa WHO weight_kg age_years          271    1.110209e-04       1.703884e-02 1.311617e-03   0.9999997
+22              wa UKWHOpreterm weight_kg age_years          479    7.343040e-05       1.703884e-02 8.390140e-04   0.9999999
+26                 wa UKWHOterm weight_kg age_years          479    7.342933e-05       1.703884e-02 8.390140e-04   0.9999999
+3                         wa US weight_kg age_years          477    1.466682e-04       1.641048e-02 1.124004e-03   0.9999997
+16                             ba WHO bmi age_years          456    2.050035e-05       1.483501e-02 7.842860e-04   0.9999998
+23                    ba UKWHOpreterm bmi age_years          469    4.956703e-06       1.483501e-02 7.158529e-04   0.9999998
+27                       ba UKWHOterm bmi age_years          469    4.956703e-06       1.483501e-02 7.158529e-04   0.9999998
+17          hca WHO head_circumference_cm age_years          125    6.901636e-04       1.381348e-02 1.925448e-03   0.9999992
+24 hca UKWHOpreterm head_circumference_cm age_years          293    2.978819e-04       1.381348e-02 1.257723e-03   0.9999998
+28    hca UKWHOterm head_circumference_cm age_years          293    2.978762e-04       1.381348e-02 1.257723e-03   0.9999998
+11                   lla UK leg_length_cm age_years          118    1.750829e-04       5.127387e-03 6.754801e-04   0.9999999
+18           aca WHO arm_circumference_cm age_years          127    4.270576e-05       2.358721e-03 3.612135e-04   1.0000000
+10               sha UK sitting_height_cm age_years          115    7.380700e-05       2.026672e-03 3.155389e-04   1.0000000
+20            tsa WHO triceps_skinfold_mm age_years          129   -1.621418e-04       2.009291e-03 4.235757e-04   0.9999999
+19        ssa WHO subscapular_skinfold_mm age_years          129   -1.199233e-04       1.276055e-03 2.831059e-04   1.0000000
+4                               ba US bmi age_years          436   -3.517979e-05       8.307235e-04 8.208505e-05   1.0000000
+2                         ha US height_cm age_years          401    4.485936e-05       7.505418e-04 1.297334e-04   1.0000000
+13                bfa UK body_fat_percent age_years           64    9.012120e-06       1.387280e-04 3.561216e-05   1.0000000
+12          wsa UK waist_circumference_cm age_years           93   -4.635724e-06       8.263275e-05 2.576943e-05   1.0000000
+

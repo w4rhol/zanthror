@@ -1,0 +1,126 @@
+
+# Test basics
+
+```{r zbmicat_stata}
+
+#load package
+library(zanthror)
+#load piping support
+library(magrittr)
+library(dplyr)
+
+# access test data
+data(zanthror_testdata)
+
+# singular vector assignment
+zbmicat_stata_v <- zbmicat_stata(
+  bmi = zanthror_testdata$bmi,
+  age = zanthror_testdata$age_years,
+  gender = zanthror_testdata$gender
+)
+table(zbmicat_stata_v)
+
+# return vector to frame, traditional
+zanthror_testdata$gender_char <- ifelse(zanthror_testdata$gender == 1, "M", "F")
+zanthror_testdata$zbmicat_stata <- zbmicat_stata(
+  bmi = zanthror_testdata$bmi,
+  age = zanthror_testdata$age_years,
+  gender = zanthror_testdata$gender_char,
+  male_code = "M",
+  female_code = "F"
+)
+table(zanthror_testdata$zbmicat_stata)
+
+# return vector to frame, tidyverse
+zanthror_testdata %<>% 
+  mutate(
+    zbmicat_stata_df = zbmicat_stata(
+      bmi = bmi,
+      age = age_years,
+      gender = gender,
+      male_code = 1,
+      female_code = 2
+      )
+    )
+table(zanthror_testdata$zbmicat_stata_df)
+
+zanthror_testdata %<>% 
+  mutate(
+    zbmicat_haven = zbmicat_stata(
+    bmi = bmi,
+    age = age_years,
+    gender = gender,
+    return = "haven", wtabbr = TRUE
+    )
+  )
+table(haven::as_factor(zanthror_testdata$zbmicat_haven))
+
+```
+
+```{r zbmicat_lms}
+
+# singular vector assignment
+zbmicat_lms_v <- zbmicat_lms(
+  bmi = zanthror_testdata$bmi,
+  age = zanthror_testdata$age_years,
+  gender = zanthror_testdata$gender
+)
+table(zbmicat_lms_v)
+
+# return vector to frame, traditional
+zanthror_testdata$gender_char <- ifelse(zanthror_testdata$gender == 1, "M", "F")
+zanthror_testdata$zbmicat_lms <- zbmicat_lms(
+  bmi = zanthror_testdata$bmi,
+  age = zanthror_testdata$age_years,
+  gender = zanthror_testdata$gender_char,
+  male_code = "M",
+  female_code = "F"
+)
+table(zanthror_testdata$zbmicat_lms)
+
+# return vector to frame, tidyverse
+library(magrittr)
+library(dplyr)
+zanthror_testdata %<>% 
+  mutate(
+    zbmicat_lms_df = zbmicat_lms(
+      bmi = bmi,
+      age = age_years,
+      gender = gender,
+      male_code = 1,
+      female_code = 2
+      )
+    )
+table(zanthror_testdata$zbmicat_lms_df)
+
+zanthror_testdata %<>% 
+  mutate(
+    zbmicat_lms_haven = zbmicat_lms(
+    bmi = bmi,
+    age = age_years,
+    gender = gender,
+    return = "haven", wtabbr = TRUE
+    )
+  )
+table(haven::as_factor(zanthror_testdata$zbmicat_lms_haven))
+
+```
+
+```{r}
+# # First, manually load the reference data from where you know it exists
+# zanthro_ref_data <-  read.csv("C:/Users/warren holroyd/OneDrive - ACT Government/R/Working/zanthror/zanthro_reference_data_combined.csv", 
+#                             stringsAsFactors = FALSE)
+# 
+# zanthror_testdata <- read.csv("C:/Users/warren holroyd/OneDrive - ACT Government/R/Working/zanthror/_build/stata/zanthror_testdata.csv", 
+#                             stringsAsFactors = FALSE)
+
+# Then test the function
+zanthror_testdata$testcol = zanthro(measure = zanthror_testdata$height_cm,
+        xvar = zanthror_testdata$age_years,
+        chart = "la", 
+        version = "US",
+        gender = zanthror_testdata$gender_label,
+        male_code = "Male",
+        female_code = "Female")
+```
+

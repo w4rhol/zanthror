@@ -1,0 +1,47 @@
+
+## Proxies for github syncing (depending on location)
+```{r}
+
+actepir::proxy_actgov_toggle("on")
+actepir::proxy_actgov_toggle("off")
+
+```
+
+## Document
+```{r message=FALSE, warning=TRUE}
+
+devtools::document()   # have roxygen update description/namespace files
+
+```
+
+## Pepare environment in advance of test build
+```{r message=FALSE, warning=TRUE}
+
+#' Resources/Discussion (.rdb corruption when unloading and reinstalling)
+#' -----------------------------------------------------------------------------
+#' https://stackoverflow.com/questions/30424608/
+#' https://github.com/r-lib/devtools/pull/1001
+#' https://stat.ethz.ch/pipermail/r-devel/2015-December/072150.html
+
+unloadNamespace("zanthror")
+try(remove.packages("zanthror"))
+.rs.restartR() 
+
+```
+
+## Document and test local build
+```{r message=FALSE, warning=TRUE}
+
+devtools::build()      # test build
+devtools::install()    # test install from local before pushing to GitHub
+
+```
+
+## Force install/update from Github (only after locally installing, testing and then pushing to Githib)
+```{r}
+
+remotes::install_github("w4rhol/zanthror")
+
+```
+
+
