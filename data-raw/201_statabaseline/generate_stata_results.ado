@@ -17,8 +17,11 @@ summarize
 * Check the data structure
 list participant_id age_years gender gender_label height_cm weight_kg in 1/5
 
+* Run zbmicat test *******************
 egen bmicat = zbmicat(bmi), xvar(age_years) gender(gender) gencode(male=1, female=2) ageunit(year)
 
+
+* Run zanthro test *******************			
 * Define all valid chart-version combinations with proper variable names
 * Format: chart|version|measure_variable|xvar_variable
 
@@ -27,13 +30,13 @@ local combinations ""
 * US CDC 2000 Charts
 local combinations "`combinations' la|US|height_cm|age_years"           // length-for-age (using height as proxy)
 local combinations "`combinations' ha|US|height_cm|age_years"           // height-for-age
-local combinations "`combinations' wa|US|weight_kg|age_years"           // weight-for-age
+local combinations "`combinations' wa|US|weight_kg|age_years"           // weight-for-age  
 local combinations "`combinations' ba|US|bmi|age_years"                 // BMI-for-age
 local combinations "`combinations' hca|US|head_circumference_cm|age_years" // head circumference-for-age
 local combinations "`combinations' wl|US|weight_kg|height_cm"           // weight-for-length (xvar=height)
 local combinations "`combinations' wh|US|weight_kg|height_cm"           // weight-for-height (xvar=height)
 
-* UK 1990 Charts
+* UK 1990 Charts  
 local combinations "`combinations' ha|UK|height_cm|age_years"           // height-for-age
 local combinations "`combinations' wa|UK|weight_kg|age_years"           // weight-for-age
 local combinations "`combinations' ba|UK|bmi|age_years"                 // BMI-for-age
@@ -56,7 +59,7 @@ local combinations "`combinations' wh|WHO|weight_kg|height_cm"          // weigh
 
 * UK-WHO Preterm Charts
 local combinations "`combinations' ha|UKWHOpreterm|height_cm|age_years" // height-for-age
-local combinations "`combinations' wa|UKWHOpreterm|weight_kg|age_years" // weight-for-age
+local combinations "`combinations' wa|UKWHOpreterm|weight_kg|age_years" // weight-for-age  
 local combinations "`combinations' ba|UKWHOpreterm|bmi|age_years"       // BMI-for-age
 local combinations "`combinations' hca|UKWHOpreterm|head_circumference_cm|age_years" // head circumference-for-age
 
@@ -76,57 +79,57 @@ display ""
 local test_count = 0
 foreach combo of local combinations {
     local test_count = `test_count' + 1
-
+    
     * Parse the combination string using | as delimiter
     tokenize "`combo'", parse("|")
     local chart "`1'"
     local version "`3'"
     local measure_var "`5'"
     local xvar_var "`7'"
-
+    
     display "Test `test_count'/`combo_count': Testing `chart' `version' with measure=`measure_var' xvar=`xvar_var'"
-
+    
     * Check if required variables exist and have data
     capture confirm variable `measure_var'
     if _rc != 0 {
         display "  -> Skipping: Variable `measure_var' not found"
         continue
     }
-
-    capture confirm variable `xvar_var'
+    
+    capture confirm variable `xvar_var'  
     if _rc != 0 {
         display "  -> Skipping: Variable `xvar_var' not found"
         continue
     }
-
+    
     * Count non-missing observations for this combination
     count if !missing(`measure_var') & !missing(`xvar_var') & !missing(gender)
     local valid_obs = r(N)
-
+    
     if `valid_obs' == 0 {
         display "  -> Skipping: No valid observations for this combination"
         continue
     }
-
+    
     display "  -> Valid observations: `valid_obs'"
-
+    
     * Generate the z-score variable name
     local z_var_name "z_`chart'_`version'_`measure_var'_`xvar_var'"
-
+    
     * Replace problematic characters in variable name
     local z_var_name = subinstr("`z_var_name'", "_cm", "cm", .)
     local z_var_name = subinstr("`z_var_name'", "_kg", "kg", .)
     local z_var_name = subinstr("`z_var_name'", "_mm", "mm", .)
     local z_var_name = subinstr("`z_var_name'", "_percent", "pct", .)
     local z_var_name = subinstr("`z_var_name'", "_years", "yrs", .)
-
+    
     * Ensure variable name isn't too long (Stata limit is 32 characters)
     if length("`z_var_name'") > 32 {
         local z_var_name = substr("`z_var_name'", 1, 32)
     }
-
+    
     display "  -> Creating variable: `z_var_name'"
-
+    
     * Generate z-scores using zanthro
     capture {
         if "`chart'" == "wl" | "`chart'" == "wh" {
@@ -140,7 +143,7 @@ foreach combo of local combinations {
                 xvar(`xvar_var') gender(gender) gencode(male=1, female=2) ageunit(year)
         }
     }
-
+    
     if _rc != 0 {
         display "  -> ERROR: Failed to generate z-scores for `combo'"
         display "  -> Error code: " _rc
@@ -150,12 +153,12 @@ foreach combo of local combinations {
         count if !missing(`z_var_name')
         local z_count = r(N)
         display "  -> Successfully calculated `z_count' z-scores"
-
+        
         * Show some summary statistics
         summarize `z_var_name', detail
         display "  -> Mean: " r(mean) ", SD: " r(sd) ", Range: [" r(min) ", " r(max) "]"
     }
-
+    
     display ""
 }
 
@@ -192,7 +195,7 @@ foreach var of varlist z_* {
     local sd = r(sd)
     local min = r(min)
     local max = r(max)
-
+    
     display "`var'" _col(35) %8.0f `valid_n' _col(45) %8.2f `mean' _col(55) %6.2f `sd' _col(65) "[" %5.2f `min' "," %5.2f `max' "]"
 }
 display "{hline 70}"

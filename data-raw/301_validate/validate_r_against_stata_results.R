@@ -4,10 +4,60 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(zanthror)
+library(magrittr)
+
+
+# ── file synchronisation function ─────────────────────────────────────────────
+
+sync_file <- function(src, dst) {
+  # 1. Check source exists
+  if (!file.exists(src)) {
+    stop(sprintf("Source file not found:\n  %s", src), call. = FALSE)
+  }
+
+  # 2. If destination is missing, or older than source, copy
+  need_copy <- !file.exists(dst) ||
+    file.info(src)$mtime > file.info(dst)$mtime
+
+  if (need_copy) {
+    dir.create(dirname(dst), recursive = TRUE, showWarnings = FALSE)
+    ok <- file.copy(src, dst, overwrite = TRUE)
+    if (!ok) stop(sprintf("Copy failed:\n  %s  →  %s", src, dst), call. = FALSE)
+
+    message(sprintf("✔  Copied: %s → %s", basename(src), dirname(dst)))
+  } else {
+    message(sprintf("↻  Up-to-date: %s", dst))
+  }
+}
+
+
+# ── file synchronisation ──────────────────────────────────────────────────────
+
+# define files to synchronise
+file_pairs <- list(
+  list(
+    src = "Q:/PHD/Health Improvement Branch/Epidemiology/Apps/R/warren holroyd/zanthror/data-raw/101_testdata/zanthror_testdata_compare.csv",
+    dst = file.path("data-raw", "101_testdata", "zanthror_testdata_compare.csv")
+  ),
+  list(
+    src = "Q:/PHD/Health Improvement Branch/Epidemiology/Apps/R/warren holroyd/zanthror/data-raw/201_statabaseline/generate_stata_results.ado",
+    dst = file.path("data-raw", "201_statabaseline", "generate_stata_results.ado")
+  )
+)
+
+# synchronise files
+invisible(lapply(file_pairs, \(p) sync_file(p$src, p$dst)))
+
+# clean up
+rm(sync_file,file_pairs)
+
+
+# ── compare zanthro vs zanthror ───────────────────────────────────────────────
 
 # Load the Stata comparison data (change to local dir if/when Stata is migrated away from Citrix)
 cat("Loading Stata comparison data...\n")
-stata_data <- read.csv("Q:/PHD/Health Improvement Branch/Epidemiology/Apps/R/warren holroyd/zanthror/data-raw/101_testdata/zanthror_testdata_compare.csv", stringsAsFactors = FALSE)
+stata_data <- read.csv("data-raw/101_testdata/zanthror_testdata_compare.csv", stringsAsFactors = FALSE)
 
 cat("Stata data loaded:", nrow(stata_data), "rows,", ncol(stata_data), "columns\n")
 
@@ -281,7 +331,7 @@ if (nrow(comparison_results) > 0) {
     p2 <- ggplot(comparison_results, aes(x = reorder(combination, max_abs_difference),
                                          y = max_abs_difference)) +
       geom_col(fill = "coral") +
-      geom_hline(yintercept = large_diff_threshold, color = "red", linestyle = "dashed") +
+      geom_hline(yintercept = large_diff_threshold, color = "red", linetype = "dashed") +
       labs(title = "Maximum Absolute Difference by Combination",
            x = "Combination", y = "Max |Difference|") +
       theme_minimal() +
