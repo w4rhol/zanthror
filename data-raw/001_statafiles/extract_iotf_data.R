@@ -33,9 +33,21 @@ load_iotf_data <- function() {
     iotf_data$X__IOTFage <- as.numeric(iotf_data$X__IOTFage)
   }
 
+  # Standardize column names to handle haven vs CSV import differences
+  col_names <- names(iotf_data)
+  # Ensure all columns have X__ prefix for consistency
+  for (i in seq_along(col_names)) {
+    if (grepl("^__IOTF", col_names[i])) {
+      names(iotf_data)[i] <- paste0("X", col_names[i])
+    }
+  }
+
   return(iotf_data)
 }
 
-# Apply any cleaning/standardization
+# Load and apply any cleaning/standardization
 iotf_data <- load_iotf_data()
 
+# Store to data-raw ready for sysdata integration
+write_rds(x=iotf_data,file = "data-raw/001_statafiles/iotf_data.rds")
+rm(iotf_data,load_iotf_data)

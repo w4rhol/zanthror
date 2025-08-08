@@ -176,34 +176,6 @@ file_summary <- zanthro_ref_data %>%
 
 print(file_summary)
 
-# # Check data structure
-# cat("\n=== DATA STRUCTURE ===\n")
-# cat("Column names and types:\n")
-# str(zanthro_ref_data)
-#
-# # Save as RDS file (R's native format, more efficient than CSV)
-# cat("\n=== SAVING DATA ===\n")
-# saveRDS(zanthro_ref_data, "zanthro_reference_data.rds")
-# cat("✓ Saved as zanthro_reference_data.rds\n")
-#
-# # Also save as CSV for compatibility
-# write.csv(zanthro_ref_data, "zanthro_reference_data_from_r.csv", row.names = FALSE)
-# cat("✓ Saved as zanthro_reference_data_from_r.csv\n")
-#
-# # Final verification
-# cat("\n=== VERIFICATION ===\n")
-# if (file.exists("zanthro_reference_data.rds")) {
-#   test_load <- readRDS("zanthro_reference_data.rds")
-#   cat("✓ RDS file verified:", nrow(test_load), "rows\n")
-# }
-#
-# if (file.exists("zanthro_reference_data_from_r.csv")) {
-#   cat("✓ CSV file created:", round(file.size("zanthro_reference_data_from_r.csv") / 1024, 1), "KB\n")
-# }
-#
-# cat("\n=== COMPLETE ===\n")
-# cat("Reference data successfully merged and saved!\n")
-# cat("You can now use either:\n")
-# cat("  - zanthro_ref_data (in memory)\n")
-# cat("  - zanthro_reference_data.rds (R native format)\n")
-# cat("  - zanthro_reference_data_from_r.csv (CSV format)\n")
+# Store to data-raw ready for sysdata integration
+write_rds(x=zanthro_ref_data,file = "data-raw/001_statafiles/zanthro_ref_data.rds")
+rm(zanthro_ref_data)
