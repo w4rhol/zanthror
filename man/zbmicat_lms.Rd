@@ -10,7 +10,7 @@ zbmicat_lms(
   gender,
   male_code = 1,
   female_code = 2,
-  age_unit = "year",
+  ageunit = "year",
   wtabbr = FALSE,
   return = "string"
 )
@@ -26,7 +26,7 @@ zbmicat_lms(
 
 \item{female_code}{Scalar. Code used for females in the gender variable (default: 2)}
 
-\item{age_unit}{Character. Units for age values. One of "year", "month", "week", "day" (default: "year")}
+\item{ageunit}{Character. Units for age values. One of "year", "month", "week", "day" (default: "year")}
 
 \item{wtabbr}{Logical. If TRUE, returns "Normal wt"; if FALSE, returns "Normal weight" (default: FALSE)}
 
@@ -136,7 +136,7 @@ result_months <- zbmicat_lms(
   bmi = zanthror_testdata$bmi,
   age = age_months,
   gender = zanthror_testdata$gender,
-  age_unit = "month"
+  ageunit = "month"
 )
 table(result_months)
 

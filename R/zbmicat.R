@@ -9,7 +9,7 @@
 #' @param gender Numeric or character vector. Gender codes (same length as bmi)
 #' @param male_code Scalar. Code used for males in the gender variable (default: 1)
 #' @param female_code Scalar. Code used for females in the gender variable (default: 2)
-#' @param age_unit Character. Units for age values. One of "year", "month", "week", "day" (default: "year")
+#' @param ageunit Character. Units for age values. One of "year", "month", "week", "day" (default: "year")
 #' @param wtabbr Logical. If TRUE, returns "Normal wt"; if FALSE, returns "Normal weight" (default: FALSE)
 #' @param return Character. Output format: "string", "factor", "labelled", "haven", or "numeric" (default: "string")
 #'
@@ -122,7 +122,7 @@
 #'   bmi = zanthror_testdata$bmi,
 #'   age = age_months,
 #'   gender = zanthror_testdata$gender,
-#'   age_unit = "month"
+#'   ageunit = "month"
 #' )
 #' table(result_months)
 #'
@@ -131,17 +131,17 @@
 #' @importFrom labelled labelled
 #' @importFrom haven labelled as_factor
 
-# version 51
+# version 57
 
-zbmicat <- function(bmi, age, gender, male_code = 1, female_code = 2, age_unit = "year", wtabbr = FALSE, return = "string") {
+zbmicat <- function(bmi, age, gender, male_code = 1, female_code = 2, ageunit = "year", wtabbr = FALSE, return = "string") {
 
   # Validate inputs
   if (length(bmi) != length(age) || length(bmi) != length(gender)) {
     stop("bmi, age, and gender must have the same length")
   }
 
-  if (!age_unit %in% c("day", "week", "month", "year")) {
-    stop("age_unit must be one of: 'day', 'week', 'month', 'year'")
+  if (!ageunit %in% c("day", "week", "month", "year")) {
+    stop("ageunit must be one of: 'day', 'week', 'month', 'year'")
   }
 
   if (!return %in% c("string", "factor", "labelled", "haven", "numeric")) {
@@ -155,7 +155,7 @@ zbmicat <- function(bmi, age, gender, male_code = 1, female_code = 2, age_unit =
   # Note: In a package, iotf_data would be automatically available from R/sysdata.rda
 
   # Convert age to years if needed
-  age_years <- switch(age_unit,
+  age_years <- switch(ageunit,
                       "year" = age,
                       "month" = age / 12,
                       "week" = age / (365.25 / 7),

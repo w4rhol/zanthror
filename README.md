@@ -148,7 +148,7 @@ result <- zbmicat(
   bmi = bmi_vector,
   age = age_months,
   gender = gender_vector,
-  age_unit = "month"
+  ageunit = "month"
 )
 
 # Age in days
@@ -157,7 +157,7 @@ result <- zbmicat(
   bmi = bmi_vector,
   age = age_days,
   gender = gender_vector,
-  age_unit = "day"
+  ageunit = "day"
 )
 ```
 
