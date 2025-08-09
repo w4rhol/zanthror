@@ -131,6 +131,7 @@
 #' @importFrom labelled labelled
 #' @importFrom haven labelled as_factor
 
+# version 49
 zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_unit = "year", wtabbr = FALSE, return = "string") {
 
   # Validate inputs
@@ -146,21 +147,11 @@ zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_
     stop("return must be one of: 'string', 'factor', 'labelled', 'haven', or 'numeric'")
   }
 
-  # Load the IOTF reference data from package internal data or file
-  if (exists("iotf_data", envir = .GlobalEnv)) {
-    iotf_data <- get("iotf_data", envir = .GlobalEnv)
-  } else if (file.exists("iotf.csv")) {
-    # Fallback: load from CSV if available
-    if (!exists(".iotf_data_cache", envir = .GlobalEnv)) {
-      .GlobalEnv$.iotf_data_cache <- load_iotf_data("iotf.csv")
-    }
-    iotf_data <- .GlobalEnv$.iotf_data_cache
-  } else {
-    stop("IOTF reference data not found. Please ensure either:\n",
-         "1. iotf_data exists in the global environment, or\n",
-         "2. iotf.csv file is in the working directory, or\n",
-         "3. Package internal data is properly loaded")
+  # Load the IOTF reference data from package internal data
+  if (!exists("iotf_data")) {
+    stop("IOTF reference data not found. This function requires the package internal data.")
   }
+  # Note: In a package, iotf_data would be automatically available from R/sysdata.rda
 
   # Convert age to years if needed
   age_years <- switch(age_unit,
