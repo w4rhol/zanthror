@@ -6,20 +6,22 @@
 
 Assuming project is loaded:
 
-1     Run the three files:
+01    Run the three files:
        - "data-raw/001_statafiles/extract_iotf_data.R"
        - "data-raw/001_statafiles/extract_zanthro_ref_data.R"
        - "data-raw/001_statafiles/build_sysdata.R"
-2     Run "101_testdata/data-raw/generate_zanthror_testdata.R"
-3     Run command "devtools::load_all()" or un pkg_test.Rmd chunks
-4     If functioning, switch to Stata and run "generate_stata_results.ado" at:
-      "~\zanthror\data-raw\201_statabaseline"
-5     Save any changes to the .ado file (if you made any)
-5     Switch back to R and run "301_validate/validate_r_against_stata_results.R"
-6     Confirm that the stata results were copied to data-raw (and updated .ado
+02    Run "data-raw/101_testdata/generate_zanthror_testdata.R"
+03    Run command "devtools::load_all()" or run "pkg_test.Rmd" chunks
+04    Clear all objects in memory
+05    If functioning, switch to Stata and run "generate_stata_results.ado" at:
+       - "~\zanthror\data-raw\201_statabaseline"
+06    Save any changes to the .ado file (if you made any)
+07    Switch back to R and run:
+       - "data-raw/301_validate/validate_r_against_stata_results.R"
+08    Confirm that the stata results were copied to data-raw (and updated .ado
       file if you made any changes)
-7     If happy with the comparison results, run through pkg_build.R process
-8     Commit and push to GitHub when ready
+09    If happy with the comparison results, run through "pkg_build.R" process
+10    Commit and push to GitHub when ready
 
 
 ----  Issues with Stata validation  --------------------------------------------
