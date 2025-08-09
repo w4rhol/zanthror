@@ -1,4 +1,4 @@
-# zanthror: Stata's zanthro anthropometric analysis tools ported to R <a href="https://github.com/w4rhol/zanthror"><img src="man/figures/hexsticker.png" align="right" height="150"/></a>
+# zanthror: Stata `zanthro` Extension Ported to R - Anthropometric Analysis Tools <a href="https://github.com/w4rhol/zanthror"><img src="man/figures/hexsticker.png" align="right" height="150"/></a>
 
 [![R-CMD-check](https://github.com/w4rhol/zanthror/workflows/R-CMD-check/badge.svg)](https://github.com/w4rhol/zanthror/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/zanthror)](https://CRAN.R-project.org/package=zanthror)

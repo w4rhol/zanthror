@@ -1,6 +1,6 @@
 Package: zanthror
 Type: Package
-Title: R replication of Stata zanthro extension
+Title: Stata `zanthro` Extension Ported to R - Anthropometric Analysis Tools
 Version: 0.1.0
 Author: Warren Holroyd
 Maintainer: Warren Holroyd <warrenholroyd@gmail.com>
