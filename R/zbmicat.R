@@ -62,7 +62,7 @@
 #' data(zanthror_testdata)
 #'
 #' # Basic usage - string output
-#' zanthror_testdata$bmi_category <- zbmicat_stata(
+#' zanthror_testdata$bmi_category <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = zanthror_testdata$age_years,
 #'   gender = zanthror_testdata$gender
@@ -70,7 +70,7 @@
 #' table(zanthror_testdata$bmi_category, useNA = "ifany")
 #'
 #' # Factor output for statistical analysis
-#' bmi_factor <- zbmicat_stata(
+#' bmi_factor <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = zanthror_testdata$age_years,
 #'   gender = zanthror_testdata$gender,
@@ -79,7 +79,7 @@
 #' levels(bmi_factor)
 #'
 #' # Labelled output
-#' bmi_labelled <- zbmicat_stata(
+#' bmi_labelled <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = zanthror_testdata$age_years,
 #'   gender = zanthror_testdata$gender,
@@ -88,7 +88,7 @@
 #' labelled::val_labels(bmi_labelled)
 #'
 #' # Numeric output (values -3 to 2, no labels)
-#' bmi_numeric <- zbmicat_stata(
+#' bmi_numeric <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = zanthror_testdata$age_years,
 #'   gender = zanthror_testdata$gender,
@@ -97,7 +97,7 @@
 #' table(bmi_numeric)
 #'
 #' # Haven-labelled output
-#' bmi_haven <- zbmicat_stata(
+#' bmi_haven <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = zanthror_testdata$age_years,
 #'   gender = zanthror_testdata$gender,
@@ -107,7 +107,7 @@
 #'
 #' # With character gender codes
 #' zanthror_testdata$gender_char <- ifelse(zanthror_testdata$gender == 1, "M", "F")
-#' result <- zbmicat_stata(
+#' result <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = zanthror_testdata$age_years,
 #'   gender = zanthror_testdata$gender_char,
@@ -118,7 +118,7 @@
 #'
 #' # Age in months
 #' age_months <- zanthror_testdata$age_years * 12
-#' result_months <- zbmicat_stata(
+#' result_months <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = age_months,
 #'   gender = zanthror_testdata$gender,
@@ -131,8 +131,9 @@
 #' @importFrom labelled labelled
 #' @importFrom haven labelled as_factor
 
-# version 49
-zbmicat_stata <- function(bmi, age, gender, male_code = 1, female_code = 2, age_unit = "year", wtabbr = FALSE, return = "string") {
+# version 51
+
+zbmicat <- function(bmi, age, gender, male_code = 1, female_code = 2, age_unit = "year", wtabbr = FALSE, return = "string") {
 
   # Validate inputs
   if (length(bmi) != length(age) || length(bmi) != length(gender)) {

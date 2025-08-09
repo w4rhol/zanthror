@@ -1,12 +1,12 @@
 
 # Test basics
 
-```{r zbmicat_stata}
+```{r zbmicat}
 
 #load package
-#library(zanthror)
-devtools::document()
-devtools::load_all()
+library(zanthror)
+#devtools::document()
+#devtools::load_all()
 
 #load piping support
 library(magrittr)
@@ -16,28 +16,28 @@ library(dplyr)
 data(zanthror_testdata)
 
 # singular vector assignment
-zbmicat_stata_v <- zbmicat_stata(
+zbmicat_v <- zbmicat(
   bmi = zanthror_testdata$bmi,
   age = zanthror_testdata$age_years,
   gender = zanthror_testdata$gender
 )
-table(zbmicat_stata_v)
+table(zbmicat_v)
 
 # return vector to frame, traditional
 zanthror_testdata$gender_char <- ifelse(zanthror_testdata$gender == 1, "M", "F")
-zanthror_testdata$zbmicat_stata <- zbmicat_stata(
+zanthror_testdata$zbmicat <- zbmicat(
   bmi = zanthror_testdata$bmi,
   age = zanthror_testdata$age_years,
   gender = zanthror_testdata$gender_char,
   male_code = "M",
   female_code = "F"
 )
-table(zanthror_testdata$zbmicat_stata)
+table(zanthror_testdata$zbmicat)
 
 # return vector to frame, tidyverse
 zanthror_testdata %<>% 
   mutate(
-    zbmicat_stata_df = zbmicat_stata(
+    zbmicat_df = zbmicat(
       bmi = bmi,
       age = age_years,
       gender = gender,
@@ -45,11 +45,11 @@ zanthror_testdata %<>%
       female_code = 2
       )
     )
-table(zanthror_testdata$zbmicat_stata_df)
+table(zanthror_testdata$zbmicat_df)
 
 zanthror_testdata %<>% 
   mutate(
-    zbmicat_haven = zbmicat_stata(
+    zbmicat_haven = zbmicat(
     bmi = bmi,
     age = age_years,
     gender = gender,

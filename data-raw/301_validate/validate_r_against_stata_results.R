@@ -345,7 +345,7 @@ if (nrow(comparison_results) > 0) {
 
 stata_data %<>%
   mutate(
-    zbmicat_r = zbmicat_stata(
+    zbmicat_r = zbmicat(
       bmi = bmi,
       age = age_years,
       gender = gender,
