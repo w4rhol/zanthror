@@ -1,40 +1,67 @@
-===================================================================================
+================================================================================
   NOTES FOR FUTURE SELF
-===================================================================================
+================================================================================
 
-----  Issues with Stata validation  -----------------------------------------------
+----  Build & local test process  ----------------------------------------------
 
-Currently, the organisational infrastrure arrangements have Stata hosted on a 
-Citrix machine, thus limiting it's ability to see the OneDrive location which this 
-package has been built from.
+Assuming project is loaded:
+
+1     Run the three files:
+       - "data-raw/001_statafiles/extract_iotf_data.R"
+       - "data-raw/001_statafiles/extract_zanthro_ref_data.R"
+       - "data-raw/001_statafiles/build_sysdata.R"
+2     Run "101_testdata/data-raw/generate_zanthror_testdata.R"
+3     Run command "devtools::load_all()" or un pkg_test.Rmd chunks
+4     If functioning, switch to Stata and run "generate_stata_results.ado" at:
+      "~\zanthror\data-raw\201_statabaseline"
+5     Save any changes to the .ado file (if you made any)
+5     Switch back to R and run "301_validate/validate_r_against_stata_results.R"
+6     Confirm that the stata results were copied to data-raw (and updated .ado
+      file if you made any changes)
+7     If happy with the comparison results, run through pkg_build.R process
+8     Commit and push to GitHub when ready
+
+
+----  Issues with Stata validation  --------------------------------------------
+
+Currently, the organisational infrastrure arrangements have Stata hosted on a
+Citrix machine, thus limiting it's ability to see the OneDrive location which
+this package has been built from.
 
 As such, when sending test data over to Stata to provide baselines for function
-validation, this must be run from a network location (Q drive).  Run testdata
-folder scripts to recreate test data, run statabaseline folder scripts in Stata, 
-then run validate folder scripts from R. They are all hard-coded to reference that 
-Q drive location.
+validation, file storage operations must be run from a common network location
+such as Q drive.
 
-REMEMBER: If you make changes to the Q drive `generate_stata_results.ado` file, 
-you will need to manually copy it across to your git-sync'd folder on OneDrive to
-ensure that it remains accessible and clonable from GitHub.
+Run the testdata folder scripts to create test data (if needed, probably not),
+then run the statabaseline folder .ado script in Stata.  Save any changes you
+make to the .ado file (probably none). Then run validate folder scripts from R.
+They are all hard-coded to reference that Q drive location and synchronise both
+the stata results file and .ado file to the project folder, before running a
+comparison of function results.
 
 Short term, you could move the package to the Q drive and use a virtual machine
-which will ensure both the Citrix and virtual machine have access to that shared Q 
-drive location (without the latency which a local installation of R suffers). This
-will create a singular working location, but will still be semi-manual.
+for package development, which will ensure both the Citrix and virtual machine
+have access to that shared Q drive location (without the latency which a local
+installation of R suffers when accessing network drives). This will create a
+singular working location, but will still be semi-manual.
 
-Long term, if infrastrure arrangements alter where Stata and R are hosted on the 
-same machine, consider switching the process completely to the full integration 
-supplied by the RStata package.  Stata will then be accessed remotely by R and you
-can streamline the validation process.
+Long term, if infrastrure arrangements alter where Stata and R are hosted on the
+same machine, consider switching the process completely to the full integration
+supplied by the RStata package.  Stata will then be accessed remotely by R and
+you can streamline the validation process.
 
-----  Extraction of Stata reference files  ----------------------------------------
 
-These are currently all hard-coded to read the Q drive location.  Also note that 
-some reference files are not in the 'z' ado folder, but are under '_' for some odd
-reason.
+----  Extraction of Stata reference files  -------------------------------------
 
-----  Minor variations in zscores  ------------------------------------------------
+These are currently all hard-coded to read the Q drive location.  Also note that
+some reference files are not in the 'z' ado folder, but are under '_' for some
+odd reason.
+
+The iotf_data result MUST have X's prefixed on the column names after extraction
+runs.  The subtle change to loading via haven disrupted this and required a fix.
+
+
+----  Minor variations in zscores  ---------------------------------------------
 
 Probabaly a floating point error, but may be worth looking into at some point:
 
