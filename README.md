@@ -12,12 +12,12 @@
 
 - **IOTF BMI Classification**: Classify children's BMI using International Obesity Task Force cutoffs
 - **Multiple Implementation Approaches**: 
-  - `zbmicat_stata()`: Exact replication of Stata's zbmicat command with interpolation
+  - `zbmicat()`: Exact replication of Stata's zbmicat command with interpolation
   - `zbmicat_lms()`: Enhanced LMS-based method using the [sitar](https://github.com/statist7/sitar) package for greater accuracy
 - **Flexible Output Formats**: String, factor, labelled, haven, or numeric outputs
-- **Comprehensive Age Support**: Ages 2-18 years with multiple time units (years, months, weeks, days)
-- **Vectorized Performance**: Optimized for large datasets
-- **Consistent API**: Uniform interface across all functions
+- **Appropriate Age Handling**: Ages 2-18 years with multiple time units (years, months, weeks, days)
+- **Compatible with tidyverse**: Compatible with `magrittr` pipes
+- **Built-in test dataset**: Simulated dataset to assist with examples and user testing
 
 ## Installation
 
@@ -45,34 +45,58 @@ library(zanthror)
 # Load test data
 data(zanthror_testdata)
 
-# Basic BMI classification using IOTF cutoffs
-bmi_categories <- zbmicat_stata(
+# BMI classification using pre-calculated IOTF cutoffs that were
+# included with the Stata zanthro extension
+zanthror_testdata$zbmicats <- zbmicat(
   bmi = zanthror_testdata$bmi,
   age = zanthror_testdata$age_years,
-  gender = zanthror_testdata$gender
-)
+  gender = zanthror_testdata$gender,
+  return = "factor"
+  )
+  
+# BMI classification using sitar LMS method
+zanthror_testdata$zbmicats_lms <- zbmicat(
+  bmi = zanthror_testdata$bmi,
+  age = zanthror_testdata$age_years,
+  gender = zanthror_testdata$gender,
+  return = "factor"
+  )
+  
+# View crosstabulation of approaches
+table(zanthror_testdata$zbmicats, 
+      zanthror_testdata$zbmicats_lms, 
+      useNA = "ifany")
 
-# View results
-table(bmi_categories, useNA = "ifany")
+# identify outliers
+zanthror_testdata$zs = zanthro(
+  measure = zanthror_testdata$height_cm,
+  xvar = zanthror_testdata$age_years,
+  chart = "la", 
+  version = "US",
+  gender = zanthror_testdata$gender_label,
+  male_code = "Male",
+  female_code = "Female"
+  )
+
 ```
 
 ## Main Functions
 
 ### BMI Classification
 
-#### `zbmicat_stata()`
-Exact replication of Stata's zbmicat command using interpolation methods.
+#### `zbmicat()`
+Exact replication of Stata's `zbmicat` command using interpolation methods.
 
 ```r
 # String output (default)
-categories <- zbmicat_stata(
+categories <- zbmicat(
   bmi = bmi_vector,
   age = age_vector,
   gender = gender_vector
 )
 
 # Factor output for statistical analysis
-bmi_factor <- zbmicat_stata(
+bmi_factor <- zbmicat(
   bmi = bmi_vector,
   age = age_vector,
   gender = gender_vector,
@@ -80,7 +104,7 @@ bmi_factor <- zbmicat_stata(
 )
 
 # Labelled output for data export
-bmi_labelled <- zbmicat_stata(
+bmi_labelled <- zbmicat(
   bmi = bmi_vector,
   age = age_vector,
   gender = gender_vector,
@@ -89,12 +113,9 @@ bmi_labelled <- zbmicat_stata(
 ```
 
 #### `zbmicat_lms()`
-Enhanced LMS-based approach using the sitar package for more accurate cutoffs.
+Enhanced LMS-based approach using the `sitar` package for more accurate cutoffs.  Same return options are available as `zbmicat`.
 
 ```r
-# Requires sitar package
-library(sitar)
-
 categories_lms <- zbmicat_lms(
   bmi = bmi_vector,
   age = age_vector,
@@ -103,26 +124,13 @@ categories_lms <- zbmicat_lms(
 )
 ```
 
-## Classification Categories
-
-Both functions classify BMI into six IOTF-based categories:
-
-| Code | Category | Description |
-|------|----------|-------------|
-| -3 | Grade 3 thinness | BMI < 16 equivalent at age 18 |
-| -2 | Grade 2 thinness | BMI 16-17 equivalent at age 18 |
-| -1 | Grade 1 thinness | BMI 17-18.5 equivalent at age 18 |
-| 0 | Normal weight | BMI 18.5-25 equivalent at age 18 |
-| 1 | Overweight | BMI 25-30 equivalent at age 18 |
-| 2 | Obese | BMI ≥30 equivalent at age 18 |
-
 ## Advanced Usage
 
 ### Custom Gender Codes
 
 ```r
 # Using character gender codes
-result <- zbmicat_stata(
+result <- zbmicat(
   bmi = bmi_vector,
   age = age_vector,
   gender = c("Male", "Female", "Male"),
@@ -136,7 +144,7 @@ result <- zbmicat_stata(
 ```r
 # Age in months
 age_months <- age_years * 12
-result <- zbmicat_stata(
+result <- zbmicat(
   bmi = bmi_vector,
   age = age_months,
   gender = gender_vector,
@@ -145,7 +153,7 @@ result <- zbmicat_stata(
 
 # Age in days
 age_days <- age_years * 365.25
-result <- zbmicat_stata(
+result <- zbmicat(
   bmi = bmi_vector,
   age = age_days,
   gender = gender_vector,
@@ -157,35 +165,20 @@ result <- zbmicat_stata(
 
 ```r
 # String output (human-readable)
-string_result <- zbmicat_stata(bmi, age, gender, return = "string")
+string_result <- zbmicat(bmi, age, gender, return = "string")
 
 # Factor output (for statistical modeling)
-factor_result <- zbmicat_stata(bmi, age, gender, return = "factor")
+factor_result <- zbmicat(bmi, age, gender, return = "factor")
 
 # Numeric output (for data processing)
-numeric_result <- zbmicat_stata(bmi, age, gender, return = "numeric")
+numeric_result <- zbmicat(bmi, age, gender, return = "numeric")
 
 # Labelled output (for data export)
-labelled_result <- zbmicat_stata(bmi, age, gender, return = "labelled")
+labelled_result <- zbmicat(bmi, age, gender, return = "labelled")
 
 # Haven-labelled output (for SPSS/SAS compatibility)
-haven_result <- zbmicat_stata(bmi, age, gender, return = "haven")
+haven_result <- zbmicat(bmi, age, gender, return = "haven")
 ```
-
-## Performance Comparison
-
-| Method | Approach | Speed | Accuracy | Dependencies |
-|--------|----------|-------|----------|--------------|
-| `zbmicat_stata()` | Interpolation | Fast | High | None |
-| `zbmicat_lms()` | LMS method | Very Fast* | Higher | sitar |
-
-*Vectorized implementation provides significant speed improvements for large datasets
-
-## Data Requirements
-
-- **BMI**: Numeric values in kg/m²
-- **Age**: Numeric values between 2-18 years
-- **Gender**: Numeric or character codes for male/female
 
 ### Missing Data Handling
 
@@ -198,7 +191,7 @@ Functions return `NA` for cases with:
 ## Validation
 
 The package includes comprehensive test data (`zanthror_testdata`) and has been validated against:
-- Original Stata zbmicat command outputs
+- Original Stata command outputs
 - WHO growth reference standards
 - Published IOTF cutoff tables
 
