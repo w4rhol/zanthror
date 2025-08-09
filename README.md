@@ -6,7 +6,7 @@
 
 ## Overview
 
-**zanthror** provides comprehensive tools for anthropometric analysis in R, replicating and extending the functionality of the widely-used Stata `zanthro` extension developed by Vidmar, Cole, and Pan (2013). The package offers both exact replications of established Stata functions and enhanced approaches for child growth assessment and BMI classification using international standards.
+**zanthror** provides tools for anthropometric analysis in R, replicating and extending the functionality of the widely-used Stata `zanthro` extension developed by Vidmar, Cole, and Pan (2013). The package offers both exact replications of established Stata functions and enhanced approaches for child growth assessment and BMI classification using international standards.
 
 ## Key Features
 
@@ -242,16 +242,14 @@ haven_result <- zbmicat(bmi, age, gender, return = "haven")
 ### Working with the Test Dataset
 
 ```r
-# Explore the comprehensive test dataset
+# Explore the test dataset
 data(zanthror_testdata)
 str(zanthror_testdata)
 
 # Dataset includes:
 # - 500 participants aged 0-21 years
-# - Multiple countries (UK, USA, Canada, Australia, Netherlands, Brazil)
-# - Comprehensive anthropometric measurements
-# - Realistic missing data patterns
-# - UK-specific measurements for some participants
+# - Anthropometric measurements
+# - Missing data patterns
 
 # Example analysis by country
 library(dplyr)
@@ -338,7 +336,7 @@ Research using the original Stata extension has been cited in hundreds of peer-r
 
 Please report issues on our [GitHub Issues page](https://github.com/w4rhol/zanthror/issues) with:
 - Reproducible example
-- Expected vs actual behavior
+- Expected vs actual behaviour
 - System information (R version, OS, package versions)
 
 ## Acknowledgments
