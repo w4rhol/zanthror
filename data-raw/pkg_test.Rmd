@@ -5,6 +5,7 @@
 
 #load package
 #library(zanthror)
+devtools::document()
 devtools::load_all()
 
 #load piping support
