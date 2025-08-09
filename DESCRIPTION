@@ -1,7 +1,7 @@
 Package: zanthror
 Type: Package
 Title: Stata `zanthro` Extension Ported to R - Anthropometric Analysis Tools
-Version: 0.1.0
+Version: 1.0.0
 Author: Warren Holroyd
 Maintainer: Warren Holroyd <warrenholroyd@gmail.com>
 Description: Classifies BMI values using International Obesity Task Force (IOTF) 

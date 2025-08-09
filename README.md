@@ -6,18 +6,25 @@
 
 ## Overview
 
-**zanthror** provides comprehensive tools for anthropometric analysis in R, with a focus on child growth assessment and BMI classification using international standards. The package offers both exact replications of established Stata functions and enhanced LMS-based approaches for greater accuracy.
+**zanthror** provides comprehensive tools for anthropometric analysis in R, replicating and extending the functionality of the widely-used Stata `zanthro` extension developed by Vidmar, Cole, and Pan (2013). The package offers both exact replications of established Stata functions and enhanced approaches for child growth assessment and BMI classification using international standards.
 
 ## Key Features
 
-- **IOTF BMI Classification**: Classify children's BMI using International Obesity Task Force cutoffs
-- **Multiple Implementation Approaches**: 
-  - `zbmicat()`: Exact replication of Stata's zbmicat command with interpolation
+- **Comprehensive Z-Score Calculation**: Calculate anthropometric z-scores using multiple international growth references (WHO, CDC, UK-WHO, IOTF)
+- **Multiple Growth Chart Support**: 
+  - **US CDC 2000**: Length/height-for-age, weight-for-age, BMI-for-age, head circumference, weight-for-length/height
+  - **WHO Standards**: Child Growth Standards (0-5y) + Reference 2007 (5-19y) for height, weight, BMI, head circumference, arm circumference, skinfolds
+  - **UK 1990**: British Growth Reference including specialized measurements (sitting height, leg length, waist circumference, body fat)
+  - **UK-WHO Composite**: Preterm and term birth references
+- **IOTF BMI Classification**: Classify children's BMI using International Obesity Task Force cutoffs with two implementation approaches:
+  - `zbmicat()`: Exact replication of Stata's zbmicat command using interpolation
   - `zbmicat_lms()`: Enhanced LMS-based method using the [sitar](https://github.com/statist7/sitar) package for greater accuracy
-- **Flexible Output Formats**: String, factor, labelled, haven, or numeric outputs
-- **Appropriate Age Handling**: Ages 2-18 years with multiple time units (years, months, weeks, days)
-- **Compatible with tidyverse**: Compatible with `magrittr` pipes
-- **Built-in test dataset**: Simulated dataset to assist with examples and user testing
+- **Flexible Input/Output Options**: 
+  - Multiple age units (years, months, weeks, days)
+  - Gestational age adjustment
+  - Various output formats (string, factor, labelled, haven, numeric)
+- **Comprehensive Test Dataset**: Simulated dataset with 500 participants aged 0-21 years
+- **Tidyverse-friendly**: Works with `magrittr` pipes
 
 ## Installation
 
@@ -33,8 +40,9 @@ devtools::install_github("w4rhol/zanthror")
 
 The package requires different dependencies depending on which functions you use:
 
-- **Core functions**: Base R (no additional dependencies)
-- **LMS-based functions**: `sitar` package
+- **Core z-score functions (`zanthro`)**: Base R only
+- **BMI classification with interpolation (`zbmicat`)**: Base R + `stats`
+- **LMS-based BMI classification (`zbmicat_lms`)**: `sitar` package
 - **Labelled outputs**: `labelled` and/or `haven` packages
 
 ## Quick Start
@@ -45,75 +53,117 @@ library(zanthror)
 # Load test data
 data(zanthror_testdata)
 
-# BMI classification using pre-calculated IOTF cutoffs that were
-# included with the Stata zanthro extension
-zanthror_testdata$zbmicats <- zbmicat(
-  bmi = zanthror_testdata$bmi,
-  age = zanthror_testdata$age_years,
-  gender = zanthror_testdata$gender,
-  return = "factor"
-  )
-  
-# BMI classification using sitar LMS method
-zanthror_testdata$zbmicats_lms <- zbmicat(
-  bmi = zanthror_testdata$bmi,
-  age = zanthror_testdata$age_years,
-  gender = zanthror_testdata$gender,
-  return = "factor"
-  )
-  
-# View crosstabulation of approaches
-table(zanthror_testdata$zbmicats, 
-      zanthror_testdata$zbmicats_lms, 
-      useNA = "ifany")
-
-# identify outliers
-zanthror_testdata$zs = zanthro(
-  measure = zanthror_testdata$height_cm,
+# Calculate BMI z-scores using WHO charts
+zanthror_testdata$bmi_zscore <- zanthro(
+  measure = zanthror_testdata$bmi,
   xvar = zanthror_testdata$age_years,
-  chart = "la", 
-  version = "US",
+  chart = "ba",  # BMI-for-age
+  version = "WHO",
   gender = zanthror_testdata$gender_label,
   male_code = "Male",
   female_code = "Female"
-  )
+)
 
+# BMI classification using IOTF cutoffs (Stata replication)
+zanthror_testdata$bmi_category <- zbmicat(
+  bmi = zanthror_testdata$bmi,
+  age = zanthror_testdata$age_years,
+  gender = zanthror_testdata$gender,
+  return = "factor"
+)
+
+# BMI classification using enhanced LMS method
+zanthror_testdata$bmi_category_lms <- zbmicat_lms(
+  bmi = zanthror_testdata$bmi,
+  age = zanthror_testdata$age_years,
+  gender = zanthror_testdata$gender,
+  return = "factor"
+)
+
+# Compare approaches
+table(zanthror_testdata$bmi_category, 
+      zanthror_testdata$bmi_category_lms, 
+      useNA = "ifany")
+
+# Calculate height z-scores with gestational age adjustment
+height_z <- zanthro(
+  measure = zanthror_testdata$height_cm,
+  xvar = zanthror_testdata$age_years,
+  chart = "ha",  # Height-for-age
+  version = "WHO",
+  gender = zanthror_testdata$gender_label,
+  male_code = "Male",
+  female_code = "Female",
+  gestage = rep(40, nrow(zanthror_testdata))  # Assuming term births
+)
+
+# View summary statistics
+summary(zanthror_testdata[c("bmi_zscore", "bmi_category")])
 ```
 
 ## Main Functions
 
-### BMI Classification
+### Z-Score Calculation: `zanthro()`
 
-#### `zbmicat()`
-Exact replication of Stata's `zbmicat` command using interpolation methods.
+The core function replicating Stata's `zanthro()` command for calculating anthropometric z-scores using the LMS method.
 
 ```r
-# String output (default)
-categories <- zbmicat(
-  bmi = bmi_vector,
-  age = age_vector,
-  gender = gender_vector
-)
-
-# Factor output for statistical analysis
-bmi_factor <- zbmicat(
-  bmi = bmi_vector,
-  age = age_vector,
+# Basic z-score calculation
+z_scores <- zanthro(
+  measure = height_vector,     # Anthropometric measurement
+  xvar = age_vector,          # Age (or length/height for wt-for-ht charts)
+  chart = "ha",               # Chart code (see below)
+  version = "WHO",            # Reference population
   gender = gender_vector,
-  return = "factor"
-)
-
-# Labelled output for data export
-bmi_labelled <- zbmicat(
-  bmi = bmi_vector,
-  age = age_vector,
-  gender = gender_vector,
-  return = "labelled"
+  male_code = "Male",
+  female_code = "Female"
 )
 ```
 
-#### `zbmicat_lms()`
-Enhanced LMS-based approach using the `sitar` package for more accurate cutoffs.  Same return options are available as `zbmicat`.
+#### Supported Chart Codes and Versions
+
+| Chart Code | Description | Available Versions |
+|------------|-------------|-------------------|
+| `"ha"` | Height-for-age | US, UK, WHO, UKWHOpreterm, UKWHOterm |
+| `"wa"` | Weight-for-age | US, UK, WHO, UKWHOpreterm, UKWHOterm |
+| `"ba"` | BMI-for-age | US, UK, WHO, UKWHOpreterm, UKWHOterm |
+| `"hca"` | Head circumference-for-age | US, UK, WHO, UKWHOpreterm, UKWHOterm |
+| `"la"` | Length-for-age | US only |
+| `"wl"` | Weight-for-length | US, WHO |
+| `"wh"` | Weight-for-height | US, WHO |
+| `"sha"` | Sitting height-for-age | UK only |
+| `"lla"` | Leg length-for-age | UK only |
+| `"wsa"` | Waist-for-age | UK only |
+| `"bfa"` | Body fat-for-age | UK only |
+| `"aca"` | Arm circumference-for-age | WHO only |
+| `"ssa"` | Subscapular skinfold-for-age | WHO only |
+| `"tsa"` | Triceps skinfold-for-age | WHO only |
+
+### BMI Classification: `zbmicat()` and `zbmicat_lms()`
+
+#### `zbmicat()` - Stata Replication
+Exact replication of Stata's `zbmicat` command using interpolation methods and pre-calculated IOTF cutoffs.
+
+```r
+# Six-category BMI classification
+categories <- zbmicat(
+  bmi = bmi_vector,
+  age = age_vector,
+  gender = gender_vector,
+  return = "string"  # "string", "factor", "labelled", "haven", "numeric"
+)
+
+# Categories returned:
+# - Grade 3 thinness (BMI < 16 equivalent at age 18)
+# - Grade 2 thinness (BMI 16-17 equivalent)  
+# - Grade 1 thinness (BMI 17-18.5 equivalent)
+# - Normal weight (BMI 18.5-25 equivalent)
+# - Overweight (BMI 25-30 equivalent)
+# - Obese (BMI ≥30 equivalent)
+```
+
+#### `zbmicat_lms()` - Enhanced LMS Method
+Uses the `sitar` package for more accurate LMS-based cutoff calculation.
 
 ```r
 categories_lms <- zbmicat_lms(
@@ -126,76 +176,151 @@ categories_lms <- zbmicat_lms(
 
 ## Advanced Usage
 
-### Custom Gender Codes
+### Custom Gender Codes and Age Units
 
 ```r
-# Using character gender codes
+# Character gender codes
 result <- zbmicat(
   bmi = bmi_vector,
   age = age_vector,
-  gender = c("Male", "Female", "Male"),
-  male_code = "Male",
-  female_code = "Female"
+  gender = c("M", "F", "M"),
+  male_code = "M",
+  female_code = "F"
+)
+
+# Age in months
+age_months <- age_years * 12
+z_scores <- zanthro(
+  measure = height_vector,
+  xvar = age_months,
+  chart = "ha",
+  version = "WHO",
+  gender = gender_vector,
+  male_code = 1,
+  female_code = 2,
+  ageunit = "month"
 )
 ```
 
-### Different Age Units
+### Gestational Age Adjustment
 
 ```r
-# Age in months
-age_months <- age_years * 12
-result <- zbmicat(
-  bmi = bmi_vector,
-  age = age_months,
+# Adjust age for preterm births
+z_scores_adjusted <- zanthro(
+  measure = weight_vector,
+  xvar = age_weeks,
+  chart = "wa",
+  version = "UKWHOpreterm",
   gender = gender_vector,
-  ageunit = "month"
-)
-
-# Age in days
-age_days <- age_years * 365.25
-result <- zbmicat(
-  bmi = bmi_vector,
-  age = age_days,
-  gender = gender_vector,
-  ageunit = "day"
+  male_code = "Male",
+  female_code = "Female",
+  ageunit = "week",
+  gestage = gestational_age_weeks  # Vector of gestational ages
 )
 ```
 
 ### Multiple Output Formats
 
 ```r
-# String output (human-readable)
-string_result <- zbmicat(bmi, age, gender, return = "string")
+# String output (human-readable, default)
+string_result <- zbmicat(bmi, age, gender)
 
 # Factor output (for statistical modeling)
 factor_result <- zbmicat(bmi, age, gender, return = "factor")
+levels(factor_result)  # Shows proper ordering
 
-# Numeric output (for data processing)
+# Numeric output (-3 to 2, for data processing)
 numeric_result <- zbmicat(bmi, age, gender, return = "numeric")
 
-# Labelled output (for data export)
+# Labelled output (for data export to other software)
 labelled_result <- zbmicat(bmi, age, gender, return = "labelled")
 
 # Haven-labelled output (for SPSS/SAS compatibility)
 haven_result <- zbmicat(bmi, age, gender, return = "haven")
 ```
 
-### Missing Data Handling
+### Working with the Test Dataset
+
+```r
+# Explore the comprehensive test dataset
+data(zanthror_testdata)
+str(zanthror_testdata)
+
+# Dataset includes:
+# - 500 participants aged 0-21 years
+# - Multiple countries (UK, USA, Canada, Australia, Netherlands, Brazil)
+# - Comprehensive anthropometric measurements
+# - Realistic missing data patterns
+# - UK-specific measurements for some participants
+
+# Example analysis by country
+library(dplyr)
+results_by_country <- zanthror_testdata %>%
+  mutate(
+    bmi_z = zanthro(bmi, age_years, "ba", "WHO", gender_label, 
+                   male_code = "Male", female_code = "Female"),
+    bmi_cat = zbmicat(bmi, age_years, gender, return = "factor")
+  ) %>%
+  group_by(country) %>%
+  summarise(
+    n = n(),
+    mean_bmi_z = mean(bmi_z, na.rm = TRUE),
+    pct_overweight_obese = mean(bmi_cat %in% c("Overweight", "Obese"), na.rm = TRUE) * 100
+  )
+```
+
+## Missing Data Handling
 
 Functions return `NA` for cases with:
 - Missing BMI, age, or gender values
-- BMI ≤ 0
-- Age < 2 or > 18 years
+- BMI ≤ 0 (invalid measurements)
+- Age outside valid range for selected chart/version
 - Invalid gender codes
+- Z-scores with absolute values ≥5 (potential data entry errors, unless `nocutoff=TRUE`)
 
-## Validation
+## Chart-Specific Age Ranges
 
-The package includes comprehensive test data (`zanthror_testdata`) and has been validated against:
-- Original Stata command outputs
-- WHO growth reference standards
-- Published IOTF cutoff tables
+| Chart/Version | Age Range | Notes |
+|---------------|-----------|-------|
+| **US CDC 2000** | | |
+| Length-for-age | 0-35.5 months | |
+| Height-for-age | 2-20 years | |
+| Weight-for-age | 0-20 years | |
+| BMI-for-age | 2-20 years | |
+| Head circumference | 0-36 months | |
+| Weight-for-length | 45-103.5 cm | |
+| Weight-for-height | 77-121.5 cm | |
+| **UK 1990** | | |
+| Height/weight/BMI | 0-23 years | |
+| Head circumference | 0-18y (M), 0-17y (F) | |
+| Sitting height/leg length | 0-23 years | UK participants only |
+| Waist circumference | 3-17 years | UK participants only |
+| Body fat | 4.75-19.83 years | UK participants only |
+| **WHO** | | |
+| Height/BMI-for-age | 0-19 years | |
+| Weight-for-age | 0-10 years | |
+| Head circumference | 0-5 years | |
+| ARM/skinfolds | 0.25-5 years | |
+
+## Validation and Accuracy
+
+The package has been validated against:
+- Original Stata command outputs from Vidmar, Cole & Pan (2013)
+- WHO growth reference standards and IOTF cutoff tables (Cole & Lobstein, 2012)
+- Published anthropometric reference data
+
+Research using the original Stata extension has been cited in hundreds of peer-reviewed publications, demonstrating its reliability for anthropometric analysis.
+
+## Performance Notes
+
+- All functions are vectorized for efficient processing of large datasets
+- The `zbmicat_lms()` function may be slower than `zbmicat()` due to LMS calculations but provides greater accuracy
+- Reference data is included in the package for offline use
 
 ## References
+
+**Original Stata Extension:**
+- Vidmar, S.I., Cole, T.J., Pan, H. (2013). Standardizing anthropometric measures in children and adolescents with functions for egen: Update. *Stata Journal*, 13(2), 366-378.
 
 **IOTF References:**
 - Cole, T. J., & Lobstein, T. (2012). Extended international (IOTF) body mass index cut-offs for thinness, overweight and obesity. *Pediatric Obesity*, 7(4), 284-294.
@@ -203,6 +328,11 @@ The package includes comprehensive test data (`zanthror_testdata`) and has been 
 
 **LMS Method:**
 - Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. *Statistics in Medicine*, 11(10), 1305-1319.
+
+**Growth References:**
+- WHO Child Growth Standards (2006) and WHO Reference 2007
+- US CDC 2000 Growth Reference
+- UK 1990 Growth Reference (Freeman et al., 1995)
 
 ## Issues and Bug Reports
 
@@ -213,17 +343,18 @@ Please report issues on our [GitHub Issues page](https://github.com/w4rhol/zanth
 
 ## Acknowledgments
 
-- **Suzanna I. Vidmar, Tim J. Cole & Huiqi Pan** for the [original zbmicat implementation](https://www.stata-journal.com/article.html?article=dm0004_1)
-- **Tim J. Cole** for the [sitar](https://github.com/statist7/sitar) package
+- **Suzanna I. Vidmar, Tim J. Cole & Huiqi Pan** for the original Stata zanthro implementation
+- **Tim J. Cole** for the [sitar](https://github.com/statist7/sitar) package and pioneering work on the LMS method
+- **International Obesity Task Force (IOTF)** for developing internationally standardized BMI cutoffs
 
 ## Citation
 
-If you use zanthror in your research, please derive a citation from:
+If you use zanthror in your research, please cite:
 
-```
+```r
 citation("zanthror")
 ```
 
 ---
 
-**Package Website**: https://w4rhol.github.com/zanthror/
+**GitHub Repository**: https://github.com/w4rhol/zanthror
