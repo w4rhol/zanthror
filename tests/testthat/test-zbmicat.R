@@ -1,9 +1,9 @@
 test_that("zbmicat_stata works with basic input", {
   # Basic test to ensure package loads and function exists
-  expect_true(exists("zbmicat_stata"))
+  expect_true(exists("zbmicat"))
 
   # Test with simple valid input
-  result <- zbmicat_stata(
+  result <- zbmicat(
     bmi = c(18.5, 25.0),
     age = c(10, 12),
     gender = c(1, 2)
