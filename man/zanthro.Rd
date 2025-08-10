@@ -114,7 +114,8 @@ z_wa <- zanthro(measure = c(10.5, 12.2, 14.8),
                chart = "wa",
                version = "WHO",
                gender = c("M", "F", "M"),
-               gencode = "male=M female=F")
+               male_code = "M",
+               female_code = "F")
 
 # Height-for-age with numeric gender codes and age in months
 z_ha <- zanthro(measure = c(75, 85, 95),
@@ -122,7 +123,8 @@ z_ha <- zanthro(measure = c(75, 85, 95),
                chart = "ha",
                version = "WHO",
                gender = c(1, 2, 1),
-               gencode = "male=1 female=2",
+               male_code = 1,
+               female_code = 2,
                ageunit = "month")
 
 # BMI-for-age with gestational age correction
@@ -131,7 +133,8 @@ z_bmi <- zanthro(measure = c(15.2, 16.8, 17.5),
                 chart = "ba",
                 version = "UK",
                 gender = c("Male", "Female", "Male"),
-                gencode = "male=Male female=Female",
+                male_code = "Male",
+                female_code = "Female",
                 gestage = c(38, 35, 42))
 
 # Weight-for-height (xvar is height, not age)
@@ -140,7 +143,8 @@ z_wh <- zanthro(measure = c(12, 15, 18),
                chart = "wh",
                version = "WHO",
                gender = c("M", "F", "M"),
-               gencode = "male=M female=F")
+               male_code = "M",
+               female_code = "F")
 
 # Including extreme values (no cutoff)
 z_wa_all <- zanthro(measure = c(8, 25, 35),
@@ -148,7 +152,8 @@ z_wa_all <- zanthro(measure = c(8, 25, 35),
                    chart = "wa",
                    version = "WHO",
                    gender = c("M", "F", "M"),
-                   gencode = "male=M female=F",
+                   male_code = "M",
+                   female_code = "F",
                    nocutoff = TRUE)
 
 }

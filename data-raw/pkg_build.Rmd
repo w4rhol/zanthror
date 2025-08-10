@@ -40,7 +40,7 @@ devtools::install()    # test install from local before pushing to GitHub
 ## Force install/update from Github (only after locally installing, testing and then pushing to Githib)
 ```{r}
 
-remotes::install_github("w4rhol/zanthror")
+remotes::install_github("w4rhol/zanthror",force = TRUE)
 
 ```
 
