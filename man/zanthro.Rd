@@ -12,7 +12,6 @@ zanthro(
   gender,
   male_code = NULL,
   female_code = NULL,
-  gencode = NULL,
   ageunit = "year",
   gestage = NULL,
   nocutoff = FALSE
@@ -51,10 +50,6 @@ weight-for-length/height charts). Units specified by ageunit parameter.}
 \item{male_code}{The code used for males in the gender variable (e.g., "M", "Male", 1, "m")}
 
 \item{female_code}{The code used for females in the gender variable (e.g., "F", "Female", 2, "f")}
-
-\item{gencode}{Character string specifying gender codes in format "male=M female=F" or
-"female=F male=M" (deprecated - use male_code and female_code instead). Can use any codes
-(e.g., "male=1 female=2", "m=Male f=Female"). Comma between codes is optional.}
 
 \item{ageunit}{Character string specifying age units when xvar represents age.
 Options: "day", "week", "month", "year" (default). Not used for weight-for-length/height charts.
@@ -107,53 +102,93 @@ Sitting height: cm, Leg length: cm, Waist: cm, Body fat: \%,
 Arm circumference: cm, Skinfolds: mm
 }
 \examples{
-# Load reference data (assumes CSV is in working directory)
+# Load the test dataset
+data(zanthror_testdata)
+
 # Basic weight-for-age z-scores using WHO charts
-z_wa <- zanthro(measure = c(10.5, 12.2, 14.8),
-               xvar = c(1, 2, 3),
+z_wa <- zanthro(measure = zanthror_testdata$weight_kg,
+               xvar = zanthror_testdata$age_years,
                chart = "wa",
                version = "WHO",
-               gender = c("M", "F", "M"),
-               male_code = "M",
-               female_code = "F")
+               gender = zanthror_testdata$gender_label,
+               male_code = "Male",
+               female_code = "Female")
 
-# Height-for-age with numeric gender codes and age in months
-z_ha <- zanthro(measure = c(75, 85, 95),
-               xvar = c(12, 24, 36),
+# Height-for-age with numeric gender codes
+z_ha <- zanthro(measure = zanthror_testdata$height_cm,
+               xvar = zanthror_testdata$age_years,
                chart = "ha",
                version = "WHO",
-               gender = c(1, 2, 1),
+               gender = zanthror_testdata$gender,
                male_code = 1,
-               female_code = 2,
-               ageunit = "month")
+               female_code = 2)
 
-# BMI-for-age with gestational age correction
-z_bmi <- zanthro(measure = c(15.2, 16.8, 17.5),
-                xvar = c(2.5, 3.0, 3.5),
+# BMI-for-age using UK charts with auto-detection of gender codes
+z_bmi <- zanthro(measure = zanthror_testdata$bmi,
+                xvar = zanthror_testdata$age_years,
                 chart = "ba",
                 version = "UK",
-                gender = c("Male", "Female", "Male"),
-                male_code = "Male",
-                female_code = "Female",
-                gestage = c(38, 35, 42))
+                gender = zanthror_testdata$gender_label)  # Auto-detects Male/Female
+
+# Head circumference-for-age using US charts, subset of young children
+young_children <- zanthror_testdata$age_years <= 3
+z_hc <- zanthro(measure = zanthror_testdata$head_circumference_cm[young_children],
+               xvar = zanthror_testdata$age_years[young_children],
+               chart = "hca",
+               version = "US",
+               gender = zanthror_testdata$gender_label[young_children],
+               male_code = "Male",
+               female_code = "Female")
 
 # Weight-for-height (xvar is height, not age)
-z_wh <- zanthro(measure = c(12, 15, 18),
-               xvar = c(80, 90, 100),
+z_wh <- zanthro(measure = zanthror_testdata$weight_kg,
+               xvar = zanthror_testdata$height_cm,
                chart = "wh",
                version = "WHO",
-               gender = c("M", "F", "M"),
-               male_code = "M",
-               female_code = "F")
+               gender = zanthror_testdata$gender_label,
+               male_code = "Male",
+               female_code = "Female")
+
+# WHO skinfold measurements for young children
+young_subset <- zanthror_testdata$age_years <= 5
+z_triceps <- zanthro(measure = zanthror_testdata$triceps_skinfold_mm[young_subset],
+                    xvar = zanthror_testdata$age_years[young_subset],
+                    chart = "tsa",
+                    version = "WHO",
+                    gender = zanthror_testdata$gender_label[young_subset],
+                    male_code = "Male",
+                    female_code = "Female")
+
+# UK-specific measurements (sitting height)
+# Note: Only available for UK participants in the dataset
+uk_participants <- !is.na(zanthror_testdata$sitting_height_cm)
+z_sitting <- zanthro(measure = zanthror_testdata$sitting_height_cm[uk_participants],
+                    xvar = zanthror_testdata$age_years[uk_participants],
+                    chart = "sha",
+                    version = "UK",
+                    gender = zanthror_testdata$gender_label[uk_participants],
+                    male_code = "Male",
+                    female_code = "Female")
 
 # Including extreme values (no cutoff)
-z_wa_all <- zanthro(measure = c(8, 25, 35),
-                   xvar = c(2, 3, 4),
-                   chart = "wa",
-                   version = "WHO",
-                   gender = c("M", "F", "M"),
-                   male_code = "M",
-                   female_code = "F",
-                   nocutoff = TRUE)
+z_wa_nocutoff <- zanthro(measure = zanthror_testdata$weight_kg,
+                        xvar = zanthror_testdata$age_years,
+                        chart = "wa",
+                        version = "WHO",
+                        gender = zanthror_testdata$gender_label,
+                        male_code = "Male",
+                        female_code = "Female",
+                        nocutoff = TRUE)
+
+# Add z-scores directly to the dataset
+zanthror_testdata$z_weight_who <- zanthro(
+  measure = zanthror_testdata$weight_kg,
+  xvar = zanthror_testdata$age_years,
+  chart = "wa",
+  version = "WHO",
+  gender = zanthror_testdata$gender_label,
+  male_code = "Male",
+  female_code = "Female"
+)
 
 }
