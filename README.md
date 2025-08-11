@@ -2,7 +2,7 @@
 
 [![R-CMD-check](https://github.com/w4rhol/zanthror/workflows/R-CMD-check/badge.svg)](https://github.com/w4rhol/zanthror/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/zanthror)](https://CRAN.R-project.org/package=zanthror)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 

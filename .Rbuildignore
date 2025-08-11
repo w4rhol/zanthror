@@ -1,2 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.github$
+^data-raw$
+^data-local$
+^LICENSE\.md$
