@@ -10,7 +10,7 @@
 
 ## Key Features
 
-- **Comprehensive Z-Score Calculation**: Calculate anthropometric z-scores using multiple international growth references (WHO, CDC, UK-WHO, IOTF)
+- **Z-Score Calculation**: Calculate anthropometric z-scores using multiple international growth references (WHO, CDC, UK-WHO, IOTF)
 - **Multiple Growth Chart Support**: 
   - **US CDC 2000**: Length/height-for-age, weight-for-age, BMI-for-age, head circumference, weight-for-length/height
   - **WHO Standards**: Child Growth Standards (0-5y) + Reference 2007 (5-19y) for height, weight, BMI, head circumference, arm circumference, skinfolds
@@ -299,15 +299,6 @@ Functions return `NA` for cases with:
 | Weight-for-age | 0-10 years | |
 | Head circumference | 0-5 years | |
 | ARM/skinfolds | 0.25-5 years | |
-
-## Validation and Accuracy
-
-The package has been validated against:
-- Original Stata command outputs from Vidmar, Cole & Pan (2013)
-- WHO growth reference standards and IOTF cutoff tables (Cole & Lobstein, 2012)
-- Published anthropometric reference data
-
-Research using the original Stata extension has been cited in hundreds of peer-reviewed publications, demonstrating its reliability for anthropometric analysis.
 
 ## Performance Notes
 
