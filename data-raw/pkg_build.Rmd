@@ -1,5 +1,5 @@
 
-## Proxies for github syncing (depending on location)
+## Proxies for github syncing (depending on working location)
 ```{r}
 
 actepir::proxy_actgov_toggle("on")
@@ -7,14 +7,7 @@ actepir::proxy_actgov_toggle("off")
 
 ```
 
-## Document
-```{r message=FALSE, warning=TRUE}
-
-devtools::document()   # have roxygen update description/namespace files
-
-```
-
-## Pepare environment in advance of test build
+## Pepare environment in advance of test local build
 ```{r message=FALSE, warning=TRUE}
 
 #' Resources/Discussion (.rdb corruption when unloading and reinstalling)
@@ -26,6 +19,12 @@ devtools::document()   # have roxygen update description/namespace files
 unloadNamespace("zanthror")
 try(remove.packages("zanthror"))
 .rs.restartR() 
+
+```
+## Document
+```{r message=FALSE, warning=TRUE}
+
+devtools::document()   # have roxygen update description/namespace files
 
 ```
 

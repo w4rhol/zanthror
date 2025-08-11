@@ -1,12 +1,19 @@
+# load package
+
+```{r load_package}
+# load from library
+library(zanthror)
+```
+
+```{r load_from_project}
+unloadNamespace("zanthror")
+devtools::document()
+devtools::load_all()
+```
 
 # Test basics
 
 ```{r zbmicat}
-
-#load package
-library(zanthror)
-#devtools::document()
-#devtools::load_all()
 
 #load piping support
 library(magrittr)
