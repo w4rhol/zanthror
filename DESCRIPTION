@@ -9,7 +9,11 @@ Description: Classifies BMI values using International Obesity Task Force (IOTF)
     zanthro extension with vectorized performance and labelling options.
 URL: https://github.com/w4rhol/zanthror
 BugReports: https://github.com/w4rhol/zanthror/issues
+<<<<<<< HEAD
 License: MIT + file LICENSE.md
+=======
+License: file LICENSE.md
+>>>>>>> e0996ac8f15254029fb7bacba723dc27521807d1
 Encoding: UTF-8
 Suggests: 
     testthat (>= 3.0.0)
