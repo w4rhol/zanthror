@@ -2,7 +2,7 @@
 #'
 #' A comprehensive dataset containing anthropometric measurements for 500 children,
 #' adolescents, and young adults aged 0-21 years, designed for testing zanthror
-#' package functions including zbmicat_stata.
+#' package functions.
 #'
 #' @format A data frame with 500 rows and 18 variables:
 #' \describe{
@@ -55,8 +55,8 @@
 #' # Age distribution
 #' hist(zanthror_testdata$age_years, main = "Age Distribution", xlab = "Age (years)")
 #'
-#' # BMI classification using zbmicat_stata
-#' zanthror_testdata$bmi_category <- zbmicat_stata(
+#' # BMI classification using zbmicat
+#' zanthror_testdata$bmi_category <- zbmicat(
 #'   bmi = zanthror_testdata$bmi,
 #'   age = zanthror_testdata$age_years,
 #'   gender = zanthror_testdata$gender
